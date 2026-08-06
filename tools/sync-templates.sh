@@ -47,7 +47,7 @@ done
 
 # almacore.sty is authored in the problem-set repository. If a sibling clone
 # is present, warn when the two copies have diverged.
-SIBLING=../Latex_Template_Economics_ProblemSet/tex/almacore.sty
+SIBLING=../Latex_Template_Economics_ProblemSet/almacore.sty
 if [[ -f "$SIBLING" ]] && ! diff -q "$SIBLING" tex/almacore.sty >/dev/null; then
   echo
   echo "WARNING: tex/almacore.sty differs from the copy in the sibling"
