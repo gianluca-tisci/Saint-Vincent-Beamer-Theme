@@ -1,0 +1,76 @@
+name: build
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base texlive-latex-recommended texlive-latex-extra \
+            texlive-pictures texlive-science texlive-fonts-recommended \
+            texlive-bibtex-extra latexmk
+
+      - name: Check templates are in sync
+        run: ./tools/sync-templates.sh --check
+
+      # Each template must build with nothing else on the path, exactly as it
+      # will on Overleaf where there is no parent directory to fall back to.
+      - name: Build beamer deck (light and night)
+        working-directory: templates/beamer
+        run: |
+          set -e
+          latexmk -pdf -interaction=nonstopmode -halt-on-error Main.tex
+          sed 's/\\usetheme{SaintVincent}/\\usetheme[night]{SaintVincent}/' \
+            Main.tex > night.tex
+          latexmk -pdf -interaction=nonstopmode -halt-on-error night.tex
+
+      # Alternative build modes go through a small wrapper .tex rather than
+      # inline TeX on the command line: latexmk treats a leading backslash as
+      # a filename and stops with "bad filename(s)".
+      - name: Build lecture notes (draft and clean)
+        working-directory: templates/notes
+        run: |
+          set -e
+          latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
+          printf '%s\n' '\PassOptionsToPackage{hidememo}{svnotes}' \
+                        '\input{main.tex}' > clean.tex
+          latexmk -pdf -interaction=nonstopmode -halt-on-error clean.tex
+
+      # The family deliberately loads no font package. Catching a regression
+      # here is cheaper than discovering it as a missing-font error on Overleaf.
+      - name: Assert no font packages are loaded
+        run: |
+          if grep -rniE 'RequirePackage.*(firasans|roboto|cabin|helvet|arevmath|augie)' tex/; then
+            echo "A font package was introduced into the style files."
+            exit 1
+          fi
+          if grep -rniE 'setbeamerfont.*family=' tex/; then
+            echo "A beamer font family override was introduced."
+            exit 1
+          fi
+          echo "No font packages loaded."
+
+      - name: Package Overleaf-ready archives
+        run: |
+          rm -rf dist && mkdir -p dist
+          (cd templates/beamer && latexmk -c >/dev/null 2>&1 || true; rm -f night.*)
+          (cd templates/notes  && latexmk -c >/dev/null 2>&1 || true; rm -f clean.*)
+          zip -r dist/saint-vincent-beamer.zip templates/beamer \
+            -x '*.aux' '*.log' '*.out' '*.fls' '*.fdb_latexmk' '*.synctex.gz'
+          zip -r dist/saint-vincent-notes.zip templates/notes \
+            -x '*.aux' '*.log' '*.out' '*.fls' '*.fdb_latexmk' '*.synctex.gz'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: templates
+          path: dist/*.zip

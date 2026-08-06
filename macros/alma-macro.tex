@@ -1,0 +1,46 @@
+% ===========================================================================
+% alma-macro.tex -- macroeconomics notation
+% Load with \input{macros/alma-macro}
+% ===========================================================================
+
+% --- Aggregate quantities --------------------------------------------------
+\newcommand{\Yt}{Y_{t}}
+\newcommand{\Ct}{C_{t}}
+\newcommand{\It}{I_{t}}
+\newcommand{\Gt}{G_{t}}
+\newcommand{\Kt}{K_{t}}
+\newcommand{\Lt}{L_{t}}
+\newcommand{\Nt}{N_{t}}
+\newcommand{\Wt}{W_{t}}
+\newcommand{\Bt}{B_{t}}
+
+% --- Rates and prices ------------------------------------------------------
+\newcommand{\inflation}{\pi_{t}}
+\newcommand{\nomrate}{i_{t}}
+\newcommand{\realrate}{r_{t}}
+\newcommand{\growth}{g}
+\newcommand{\deprec}{\delta}                    % depreciation rate
+\newcommand{\discount}{\beta}                   % discount factor
+\newcommand{\risk}{\sigma}                      % risk aversion / IES parameter
+
+% --- Per-capita and detrended ----------------------------------------------
+\newcommand{\pc}[1]{\tilde{#1}}                 % per effective worker
+\newcommand{\dev}[1]{\hat{#1}}                  % log-deviation from steady state
+\newcommand{\ss}[1]{\bar{#1}}                   % steady-state value
+
+% --- Expectations over time ------------------------------------------------
+% \E and \Ex come from almacore: \Ex[t]{\cdot} gives E_t.
+\newcommand{\Et}{\mathbb{E}_{t}}
+\newcommand{\Etp}[1]{\mathbb{E}_{t}\!\left[#1\right]}
+
+% --- Common functional forms -----------------------------------------------
+\newcommand{\CobbDouglas}[3]{#1^{#2} #3^{1-#2}}
+\newcommand{\CRRA}[2]{\frac{#1^{1-#2}-1}{1-#2}}
+
+% --- Policy ----------------------------------------------------------------
+\newcommand{\Taylor}{\text{Taylor rule}}
+\newcommand{\IS}{\mathrm{IS}}
+\newcommand{\LM}{\mathrm{LM}}
+\newcommand{\PC}{\mathrm{PC}}                   % Phillips curve
+\newcommand{\AD}{\mathrm{AD}}
+\newcommand{\AS}{\mathrm{AS}}

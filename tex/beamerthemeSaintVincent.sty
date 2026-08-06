@@ -1,0 +1,222 @@
+%% beamerthemeSaintVincent.sty
+%% ===========================================================================
+%% Saint Vincent -- a clean Beamer theme built on almacore.
+%% Author: Gianluca Tisci
+%% License: MIT (see LICENSE)
+%% ===========================================================================
+%%
+%% USAGE
+%%   \documentclass[aspectratio=169]{beamer}
+%%   \usetheme{SaintVincent}
+%%
+%% OPTIONS
+%%   night           Dark colour scheme.
+%%   nosectionslides Do not insert a divider slide at each \section.
+%%   (options not listed here are forwarded to almacore: hidememo, wiggle=,
+%%    nographs)
+%%
+%% FONTS
+%% This theme loads NO font package and never changes \familydefault. Slides
+%% use Beamer's own default family. Everything is styled by size, weight and
+%% colour only -- the same rule the whole alma / Saint Vincent family follows.
+%%
+%% RELATION TO SIMPLEPLUS
+%% Earlier versions of this repository called \usetheme{SimplePlus} without
+%% shipping that theme, so the deck did not build from a fresh clone. This
+%% theme is standalone: it depends on nothing outside Beamer and almacore.
+%% ===========================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemeSaintVincent}[2026/08/06 v1.0 Saint Vincent theme]
+
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=sv, prefix=sv@}
+\DeclareBoolOption{night}
+\DeclareBoolOption{nosectionslides}
+\DeclareDefaultOption{\PassOptionsToPackage{\CurrentOption}{almacore}}
+\ProcessKeyvalOptions*
+
+\mode<presentation>
+
+\RequirePackage{almacore}
+
+
+%=============================================================================
+%  COLOURS
+%-----------------------------------------------------------------------------
+% The accent comes from almacore, so the slides, the notes class and the
+% problem-set template are all the same blue. Re-brand once in almacore.sty
+% and every template follows.
+%=============================================================================
+
+\ifsv@night
+  \definecolor{svbg}{HTML}{14181D}
+  \definecolor{svfg}{HTML}{E8EAED}
+  \colorlet{svaccent}{almaaccent!45!white}
+  \colorlet{svmuted}{svfg!55!svbg}
+  \colorlet{svalert}{almaalert!65!white}
+\else
+  \definecolor{svbg}{HTML}{FFFFFF}
+  \definecolor{svfg}{HTML}{1A1A1A}
+  \colorlet{svaccent}{almaaccent}
+  \colorlet{svmuted}{almamuted}
+  \colorlet{svalert}{almaalert}
+\fi
+
+\setbeamercolor{normal text}{fg=svfg, bg=svbg}
+\setbeamercolor{structure}{fg=svaccent}
+\setbeamercolor{alerted text}{fg=svalert}
+% Every tint below is mixed explicitly against svbg. Writing `svaccent!8'
+% would mix against WHITE regardless of theme, which in night mode produced
+% near-white block bodies on a near-black slide.
+\setbeamercolor{title}{fg=svaccent}
+\setbeamercolor{subtitle}{fg=svmuted}
+\setbeamercolor{author}{fg=svfg}
+\setbeamercolor{institute}{fg=svmuted}
+\setbeamercolor{date}{fg=svmuted}
+\setbeamercolor{frametitle}{fg=svaccent, bg=svbg}
+\setbeamercolor{framesubtitle}{fg=svmuted, bg=svbg}
+\setbeamercolor{footline}{fg=svmuted}
+\setbeamercolor{itemize item}{fg=svaccent}
+\setbeamercolor{itemize subitem}{fg=svaccent!75}
+\setbeamercolor{enumerate item}{fg=svaccent}
+\setbeamercolor{caption name}{fg=svaccent}
+\setbeamercolor{section in toc}{fg=svfg}
+\setbeamercolor{subsection in toc}{fg=svmuted}
+
+% Blocks. `block' carries the accent; `alertblock' is the one place a second
+% colour is warranted, since an alert that looks like everything else is not
+% an alert. `example' stays neutral rather than introducing a third hue.
+\setbeamercolor{block title}{fg=svbg, bg=svaccent}
+\setbeamercolor{block body}{fg=svfg, bg=svaccent!12!svbg}
+% almaalert stays a dark red in both schemes, so its title always needs light
+% text -- svbg would be dark-on-dark-red in night mode.
+\setbeamercolor{block title alerted}{fg=white, bg=almaalert}
+\setbeamercolor{block body alerted}{fg=svfg, bg=svalert!12!svbg}
+\setbeamercolor{block title example}{fg=svfg, bg=svmuted!35!svbg}
+\setbeamercolor{block body example}{fg=svfg, bg=svmuted!12!svbg}
+
+\setbeamercolor{palette primary}{fg=svbg, bg=svaccent}
+\setbeamercolor{titlelike}{fg=svaccent}
+
+
+%=============================================================================
+%  FONT SIZES AND WEIGHTS
+%-----------------------------------------------------------------------------
+% Sizes and weights only. No \setbeamerfont{...}{family=...} anywhere.
+%=============================================================================
+
+\setbeamerfont{title}{size=\LARGE, series=\bfseries}
+\setbeamerfont{subtitle}{size=\large, series=\mdseries}
+\setbeamerfont{frametitle}{size=\large, series=\bfseries}
+\setbeamerfont{framesubtitle}{size=\small, series=\mdseries}
+\setbeamerfont{author}{size=\normalsize}
+\setbeamerfont{institute}{size=\small}
+\setbeamerfont{date}{size=\small}
+\setbeamerfont{block title}{size=\normalsize, series=\bfseries}
+\setbeamerfont{footline}{size=\scriptsize}
+\setbeamerfont{caption}{size=\small}
+\setbeamerfont{caption name}{series=\bfseries}
+
+
+%=============================================================================
+%  STRUCTURAL TEMPLATES
+%=============================================================================
+
+% The navigation symbols cost a corner of every slide and nobody clicks them.
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamertemplate{itemize item}{\small$\blacktriangleright$}
+\setbeamertemplate{itemize subitem}{\scriptsize$\blacktriangleright$}
+\setbeamertemplate{itemize subsubitem}{\scriptsize$-$}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamertemplate{caption}[numbered]
+
+% --- Frame title: title, optional subtitle, thin accent rule ---------------
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \vspace{0.9em}%
+  \begin{beamercolorbox}[wd=\paperwidth, leftskip=0.8cm, rightskip=0.8cm]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle\par
+    \ifx\insertframesubtitle\@empty\else
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}%
+       \insertframesubtitle\par}%
+    \fi
+    \vspace{0.25em}%
+    {\color{svaccent}\rule{0.965\paperwidth}{0.8pt}}%
+  \end{beamercolorbox}
+  \vspace{0.4em}%
+}
+
+% --- Footline: short title, section, page ----------------------------------
+\setbeamertemplate{footline}{%
+  \hbox{%
+    \begin{beamercolorbox}[wd=0.34\paperwidth, ht=2.4ex, dp=1.2ex,
+                           leftskip=0.8cm]{footline}
+      \usebeamerfont{footline}\insertshorttitle
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=0.46\paperwidth, ht=2.4ex, dp=1.2ex,
+                           center]{footline}
+      \usebeamerfont{footline}\insertsectionhead
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=0.20\paperwidth, ht=2.4ex, dp=1.2ex,
+                           rightskip=0.8cm plus1fil]{footline}
+      \usebeamerfont{footline}\hfill\insertframenumber/\inserttotalframenumber
+    \end{beamercolorbox}%
+  }%
+  \vskip0pt
+}
+
+% --- Title page -------------------------------------------------------------
+\setbeamertemplate{title page}{%
+  \begin{center}
+    \vfill
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
+    \ifx\insertsubtitle\@empty\else
+      \vspace{0.35em}
+      {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}
+    \fi
+    \vspace{0.9em}
+    {\color{svaccent}\rule{0.55\paperwidth}{1pt}}\par
+    \vspace{0.9em}
+    {\usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor\par}
+    \vspace{0.5em}
+    {\usebeamerfont{institute}\usebeamercolor[fg]{institute}\insertinstitute\par}
+    \vspace{0.9em}
+    {\usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate\par}
+    \vfill
+  \end{center}
+}
+
+% --- Section divider --------------------------------------------------------
+\setbeamertemplate{section page}{%
+  \begin{center}
+    \vfill
+    {\usebeamerfont{frametitle}\usebeamercolor[fg]{title}%
+     \Large\insertsectionhead\par}
+    \vspace{0.6em}
+    {\color{svaccent}\rule{0.35\paperwidth}{1pt}}
+    \vfill
+  \end{center}
+}
+
+\ifsv@nosectionslides\else
+  \AtBeginSection[]{%
+    \begin{frame}[plain, noframenumbering]
+      \sectionpage
+    \end{frame}%
+  }
+\fi
+
+% --- Table of contents ------------------------------------------------------
+\setbeamertemplate{section in toc}{%
+  \leavevmode\leftskip=0pt%
+  {\color{svaccent}\inserttocsectionnumber.}~\inserttocsection\par
+}
+\setbeamertemplate{subsection in toc}{%
+  \leavevmode\leftskip=1.4em%
+  {\color{svaccent}\textbullet}~\inserttocsubsection\par
+}
+
+\mode<all>
+\endinput

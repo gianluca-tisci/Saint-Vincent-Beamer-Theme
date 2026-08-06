@@ -1,0 +1,404 @@
+%% almacore.sty
+%% ===========================================================================
+%% Shared core for the alma / Saint Vincent LaTeX template family.
+%% Author: Gianluca Tisci
+%% License: MIT (see LICENSE)
+%% ===========================================================================
+%%
+%% DESIGN INSPIRATION
+%% The feature set (pencil annotations, shaded call-outs, draft memos) is
+%% inspired by Ambrogio Cesa-Bianchi's JambroNotesTheme and JambroBeamerTheme.
+%% No code from either project is used here; every macro below is an
+%% independent implementation.
+%%
+%% THE ONE RULE FOR THIS FILE
+%% almacore.sty must stay CLASS-AGNOSTIC: it has to load cleanly under both
+%% `article` and `beamer`. Therefore it may only require packages that are
+%% safe in a Beamer preamble. Anything that assumes a page-based article
+%% class -- geometry, fancyhdr, titlesec, tocloft, hyperref setup, sectioning,
+%% margin notes -- belongs in a WRAPPER (almasolutions.sty, svnotes.sty,
+%% beamerthemeSaintVincent.sty), never here.
+%%
+%% FONTS
+%% This package loads NO font package and never changes \familydefault,
+%% \rmdefault or \sfdefault. Documents keep whatever fonts their class
+%% provides. Headings in the wrappers are styled by size/weight/colour only.
+%%
+%% OPTIONS
+%%   wiggle=<n>   Amplitude in pt of the hand-drawn decoration (default 0.4).
+%%                Larger = more pronounced wobble.
+%%   hidememo     Suppress every \memo and \NB, for a clean final build.
+%%   nographs     Skip loading pgfplots and the econaxis style (faster
+%%                compiles for documents that draw no charts).
+%% ===========================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{almacore}[2026/08/06 v1.0 alma template family -- shared core]
+
+
+%=============================================================================
+%  PACKAGE OPTIONS
+%-----------------------------------------------------------------------------
+% Note on naming: we deliberately do NOT call the suppression option `final`
+% or its inverse `draft`. Both are standard *class* options, and LaTeX passes
+% global class options down to every package -- so \documentclass[draft]{article}
+% would silently flip memo visibility while also switching on overfull-box
+% rules. `hidememo` cannot collide, and matches the name Jambro users know.
+%=============================================================================
+
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=alma, prefix=alma@}
+
+\DeclareStringOption[0.4]{wiggle}
+\DeclareBoolOption{hidememo}
+\DeclareBoolOption{nographs}
+\ProcessKeyvalOptions*
+
+% The wiggle amplitude is consumed inside \tikzset. PGF's math parser
+% re-tokenises macros it meets there in document context, and an `@' in the
+% name makes it choke -- so this one macro must carry a PUBLIC name even
+% though it is internal in spirit. Do not rename it to \alma@wiggleamp.
+\newcommand{\almawiggleamp}{\alma@wiggle pt}
+
+
+%=============================================================================
+%  DEPENDENCIES  (beamer-safe only -- see THE ONE RULE above)
+%=============================================================================
+
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{etoolbox}
+\RequirePackage{xcolor}
+\RequirePackage{tikz}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{fancyvrb}
+\RequirePackage{booktabs}
+\RequirePackage{tabularx}
+% Computer Modern only ships discrete design sizes, so \notesize's 8.5pt would
+% otherwise be silently rounded to 8pt with a font-shape warning on every run.
+\RequirePackage{anyfontsize}
+
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{calc}
+
+\ifalma@nographs\else
+  \RequirePackage{pgfplots}
+  \pgfplotsset{compat=1.18}
+\fi
+
+
+%=============================================================================
+%  COLOURS
+%-----------------------------------------------------------------------------
+% Semantic names, so a document says \lapis[almaalert]{...} rather than
+% naming a hue. Change a value here and it propagates everywhere -- this is
+% the single place to re-brand the whole family.
+%
+% ONE accent colour for everything the reader sees in a finished document:
+% headings, pencil marks, call-outs, boxed results. A graded problem set is
+% not the place for a palette -- restraint reads as competence.
+%
+% almaalert is the single exception. It is used ONLY by \memo, \NB and the
+% draft watermark, all of which vanish under `hidememo', so the document you
+% actually hand in still contains exactly one colour.
+%
+% almagold is defined but unused by default; pass it explicitly if you want a
+% second pencil colour, e.g. \lapis[almagold]{...}.
+%=============================================================================
+
+\definecolor{almaaccent}{HTML}{1F4E79}  % the accent -- headings, pencil, boxes
+\definecolor{almanote}{HTML}{1F4E79}    % call-outs and links (same blue)
+\definecolor{almaalert}{HTML}{C43E1C}   % DRAFT-ONLY markers; never in a final build
+\definecolor{almagold}{HTML}{D9A404}    % optional second pencil colour
+\definecolor{almamuted}{HTML}{6E6E6E}   % de-emphasised text, table notes
+\definecolor{almacodebg}{HTML}{F2F2F2}  % code background
+\definecolor{almaboxbg}{HTML}{EEF3F8}   % notebox background
+
+
+%=============================================================================
+%  PENCIL DECORATION
+%-----------------------------------------------------------------------------
+% The hand-drawn look comes from PGF's built-in `random steps' decoration --
+% no custom \pgfdeclaredecoration is needed. Amplitude is driven by the
+% wiggle= option; segment length is fixed at 1.2pt, which is short enough to
+% read as texture rather than as a zigzag.
+%=============================================================================
+
+\tikzset{
+  almapencil/.style={
+    line width=0.6pt,
+    decorate,
+    decoration={random steps, segment length=1.2pt, amplitude=\almawiggleamp}
+  },
+  % Zero-padding anchor for inline text, so overlays track the glyph bounds.
+  almanode/.style={inner sep=0pt, outer sep=0pt, anchor=base},
+  almaboxnode/.style={inner xsep=2.5pt, inner ysep=1.5pt, outer sep=0pt, anchor=base},
+}
+
+
+%=============================================================================
+%  PENCIL COMMANDS -- PUBLIC API
+%-----------------------------------------------------------------------------
+% All of these are single-pass: they draw inside one tikzpicture and never
+% use `remember picture', so no second compilation is required and they work
+% inside floats, columns and beamer frames.
+%
+% LIMITATION (shared with every implementation of this idea): the argument
+% lives inside a TikZ node, so it cannot break across lines. Use these on
+% short phrases, not on sentences.
+%=============================================================================
+
+% --- \lapis[<colour>]{<text>} -----------------------------------------------
+% Hand-drawn underline beneath inline text.
+\newcommand{\lapis}[2][almaaccent]{%
+  \tikz[baseline=(almaX.base)]{%
+    \node[almanode] (almaX) {#2};
+    \draw[almapencil, #1]
+      ([yshift=-1.5pt]almaX.south west) -- ([yshift=-1.5pt]almaX.south east);
+  }%
+}
+
+% --- \lapisbox[<colour>]{<text>} --------------------------------------------
+% Hand-drawn box around inline text.
+\newcommand{\lapisbox}[2][almaaccent]{%
+  \tikz[baseline=(almaX.base)]{%
+    \node[almaboxnode] (almaX) {#2};
+    \draw[almapencil, #1] (almaX.south west) rectangle (almaX.north east);
+  }%
+}
+
+% --- \lapisboxeq[<colour>]{<math>} ------------------------------------------
+% Hand-drawn box around DISPLAY math. Takes bare math -- no $ or \[ needed:
+%     \lapisboxeq{u(x) = \ln x}
+\newcommand{\lapisboxeq}[2][almaaccent]{%
+  \begin{equation*}
+    \tikz[baseline=(almaX.base)]{%
+      \node[almaboxnode] (almaX) {$\displaystyle #2$};
+      \draw[almapencil, #1] (almaX.south west) rectangle (almaX.north east);
+    }%
+  \end{equation*}
+}
+
+% --- \result{<content>} -----------------------------------------------------
+% Prominent boxed final answer. Not a Jambro feature -- added because the
+% single most useful thing a problem set can do for whoever grades it is make
+% the final answer impossible to miss. Accepts text or math.
+\newcommand{\result}[1]{%
+  \begin{center}
+    \tikz{%
+      \node[almaboxnode, inner xsep=6pt, inner ysep=4pt] (almaX) {#1};
+      \draw[almapencil, almaaccent, line width=0.9pt]
+        (almaX.south west) rectangle (almaX.north east);
+    }%
+  \end{center}
+}
+
+
+%=============================================================================
+%  NOTEBOX -- shaded call-out
+%-----------------------------------------------------------------------------
+% Breakable, so a long call-out splits across a page instead of overflowing.
+% \boxentry{title} on the first line turns it into a numbered "Box N".
+%
+% The numbered box also calls \almaboxlistentry, which is a no-op here. A
+% wrapper that wants a List of Boxes redefines that hook to write to its own
+% list file -- keeping the list machinery (tocloft) out of this beamer-safe
+% core.
+%=============================================================================
+
+\newcounter{almabox}
+\newcommand{\almaboxlistentry}[1]{}  % hook; overridden by wrappers
+
+\newcommand{\boxentry}[1]{%
+  \refstepcounter{almabox}%
+  \almaboxlistentry{#1}%
+  {\bfseries\color{almanote} Box \thealmabox\ --- #1}\par\medskip
+}
+
+\newtcolorbox{notebox}[1][]{
+  breakable,
+  enhanced,
+  colback=almaboxbg,
+  colframe=almanote,
+  boxrule=0pt,
+  leftrule=2.5pt,
+  arc=0pt,
+  outer arc=0pt,
+  left=8pt, right=8pt, top=7pt, bottom=7pt,
+  #1
+}
+
+
+%=============================================================================
+%  DRAFT ANNOTATIONS
+%-----------------------------------------------------------------------------
+% \memo and \NB vanish entirely under the hidememo option, so one switch
+% turns a working draft into a submittable document.
+%
+% \memo is rendered INLINE rather than in the margin: margin placement needs
+% page geometry this core cannot assume (beamer has no margins). Wrappers are
+% free to redefine \memo for margin placement.
+%=============================================================================
+
+\newcommand{\memouser}{}   % default attribution; set with \renewcommand
+
+% Emptiness is tested with etoolbox's \ifdefempty, NOT \ifx\memouser\empty.
+% \newcommand declares \long macros while \empty is declared with a plain
+% \def, so \ifx compares the \long prefixes and reports false even when both
+% bodies are empty -- which printed a stray ": " in front of every unattributed
+% memo.
+\newcommand{\alma@memo}[2][almaalert]{%
+  \begingroup
+    \colorlet{alma@memoc}{#1}%
+    \tikz[baseline=(almaX.base)]{%
+      \node[almaboxnode, fill=alma@memoc!10, text=alma@memoc!85!black] (almaX)
+        {\footnotesize\itshape
+         \ifdefempty{\memouser}{}{\textbf{\memouser:}~}#2};
+      \draw[almapencil, alma@memoc] (almaX.south west) rectangle (almaX.north east);
+    }%
+  \endgroup
+}
+
+% \NB{...} -- terser inline flag for a quick note to self.
+\newcommand{\alma@NB}[1]{%
+  {\color{almaalert}\footnotesize\bfseries [NB: #1]}%
+}
+
+\ifalma@hidememo
+  \newcommand{\memo}[2][]{}
+  \newcommand{\NB}[1]{}
+\else
+  \newcommand{\memo}{\alma@memo}
+  \newcommand{\NB}{\alma@NB}
+\fi
+
+% Conditional content helpers, for wrappers and documents alike.
+%   \almadraftonly{...}  appears only when memos are shown
+%   \almafinalonly{...}  appears only under hidememo
+\ifalma@hidememo
+  \newcommand{\almadraftonly}[1]{}
+  \newcommand{\almafinalonly}[1]{#1}
+\else
+  \newcommand{\almadraftonly}[1]{#1}
+  \newcommand{\almafinalonly}[1]{}
+\fi
+
+
+%=============================================================================
+%  CODE
+%-----------------------------------------------------------------------------
+% \mc{...}   inline chip, normal argument (escape # $ % & _ yourself)
+% \mci|...|  inline chip, verbatim -- takes any delimiter, like \verb
+% code       block environment on a tinted background
+%
+% Stata and R are the two languages an econometrics problem set actually
+% pastes, so both get a named Verbatim flavour.
+%=============================================================================
+
+\newcommand{\mc}[1]{%
+  \begingroup\setlength{\fboxsep}{1.5pt}%
+  \colorbox{almacodebg}{\texttt{\small #1}}\endgroup
+}
+
+\newcommand{\mci}{\Verb}
+
+\DefineVerbatimEnvironment{alma@codeverb}{Verbatim}{%
+  fontsize=\small, xleftmargin=0pt, commandchars=\\\{\}%
+}
+
+\newtcolorbox{alma@codebox}{
+  breakable, enhanced,
+  colback=almacodebg, colframe=almamuted!40,
+  boxrule=0.4pt, arc=1pt,
+  left=7pt, right=7pt, top=5pt, bottom=5pt,
+}
+
+\newenvironment{code}
+  {\VerbatimEnvironment\begin{alma@codebox}\begin{alma@codeverb}}
+  {\end{alma@codeverb}\end{alma@codebox}}
+
+
+%=============================================================================
+%  TABLES
+%-----------------------------------------------------------------------------
+% Y            centred auto-width tabularx column (X is left-aligned)
+% \notesize    tight 8.5pt size for table notes
+% \tablenote   full-width note under a table, muted and correctly leaded
+% \sym         estout/esttab compatibility -- Stata's exported tables call
+%              this for significance stars and define it inline; providing it
+%              centrally means exported .tex files drop straight in.
+%=============================================================================
+
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+
+\newcommand{\notesize}{\fontsize{8.5}{10.2}\selectfont}
+
+% Width is optional so it can match the table it sits under.
+\newcommand{\tablenote}[2][\linewidth]{%
+  \begin{minipage}{#1}
+    \vspace{2pt}
+    {\notesize\color{almamuted} #2\par}
+  \end{minipage}
+}
+
+\providecommand{\sym}[1]{\ifmmode^{#1}\else\(^{#1}\)\fi}
+
+
+%=============================================================================
+%  MATH SHORTHAND
+%-----------------------------------------------------------------------------
+% Only the operators that are genuinely universal live here. Field-specific
+% notation lives in macros/alma-micro.tex, alma-metrics.tex, alma-macro.tex
+% so a document loads just what its course needs.
+%=============================================================================
+
+\providecommand{\E}{\mathbb{E}}
+\newcommand{\Ex}[1][]{\mathbb{E}_{#1}}   % \Ex[t] -> E_t ; \Ex -> E
+\providecommand{\Var}{\operatorname{Var}}
+\providecommand{\Cov}{\operatorname{Cov}}
+
+
+%=============================================================================
+%  ECON GRAPHS
+%-----------------------------------------------------------------------------
+% `econaxis' is the axis configuration every micro problem set otherwise
+% rewrites by hand: origin-crossing arrowed axes with labels at the tips.
+%
+%   \begin{tikzpicture}
+%     \begin{axis}[econaxis, xlabel={$x_1$}, ylabel={$x_2$}]
+%       \addplot[almacurve] {-x^2 + 4};
+%     \end{axis}
+%   \end{tikzpicture}
+%
+% Clipping is left ON. It is tempting to set clip=false so that annotations
+% placed past the axis survive, but that also lets every curve run off the
+% plot area whenever its range exceeds ymin/ymax -- which for the downward
+% parabolas of a typical indifference-curve figure is always. Add clip=false
+% per-axis when you actually need to annotate outside, and pair it with
+% `restrict y to domain=<ymin>:<ymax>' to keep the curves in bounds.
+%
+% Ready-made figures live in template/Attachments/Graph.tex.
+%=============================================================================
+
+\ifalma@nographs\else
+  \pgfplotsset{
+    econaxis/.style={
+      axis lines=middle,
+      axis line style={-{Stealth[length=6pt]}, thick},
+      xlabel style={at={(ticklabel* cs:1.0)}, anchor=north west},
+      ylabel style={at={(ticklabel* cs:1.0)}, anchor=south east},
+      every axis plot/.append style={very thick},
+      tick align=outside,
+      tick label style={font=\small},
+      width=11cm, height=7.5cm,
+    },
+  }
+  \tikzset{
+    almacurve/.style={almanote, very thick},
+    almacurvealt/.style={almaaccent, very thick},
+    almaconstraint/.style={almamuted, thick, dashed},
+  }
+\fi
+
+\endinput

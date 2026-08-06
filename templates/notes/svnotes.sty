@@ -1,0 +1,189 @@
+%% svnotes.sty
+%% ===========================================================================
+%% Saint Vincent -- lecture-notes class built on almacore.
+%% Author: Gianluca Tisci
+%% License: MIT (see LICENSE)
+%% ===========================================================================
+%%
+%% USAGE
+%%   \documentclass[11pt,a4paper]{article}
+%%   \usepackage{svnotes}
+%%
+%% OPTIONS
+%%   (all forwarded to almacore: hidememo, wiggle=<n>, nographs)
+%%
+%% FONTS
+%% This package loads no font package and never changes \familydefault.
+%% Documents keep the class default. Headings are styled by size, weight and
+%% colour only -- the same rule the whole family follows.
+%% ===========================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{svnotes}[2026/08/06 v1.0 Saint Vincent lecture notes]
+
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=svnotes, prefix=svnotes@}
+\DeclareDefaultOption{\PassOptionsToPackage{\CurrentOption}{almacore}}
+\ProcessKeyvalOptions*
+
+\RequirePackage{almacore}
+
+% --- Article-specific dependencies -----------------------------------------
+% Exactly the packages almacore is forbidden to load, because they assume a
+% page-based class.
+\RequirePackage[margin=1in, headheight=15pt, headsep=12pt]{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{titlesec}
+\RequirePackage{enumitem}
+\RequirePackage{amsthm}
+\RequirePackage{graphicx}
+\RequirePackage{float}
+\RequirePackage[labelfont=bf]{caption}
+\RequirePackage[colorlinks=true, linkcolor=almanote, citecolor=almanote,
+                urlcolor=almanote]{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em plus 0.1em minus 0.1em}
+
+
+%=============================================================================
+%  DOCUMENT METADATA
+%=============================================================================
+
+\newcommand{\sv@course}{}
+\newcommand{\sv@lecturer}{}
+\newcommand{\sv@year}{}
+\newcommand{\sv@shorttitle}{}
+
+\newcommand{\course}[1]{\renewcommand{\sv@course}{#1}}
+\newcommand{\lecturer}[1]{\renewcommand{\sv@lecturer}{#1}}
+\newcommand{\academicyear}[1]{\renewcommand{\sv@year}{#1}}
+\newcommand{\shorttitle}[1]{\renewcommand{\sv@shorttitle}{#1}}
+
+\renewcommand{\maketitle}{%
+  \begin{center}
+    \ifdefempty{\sv@course}{}{{\large\bfseries \sv@course}\par}
+    \ifdefempty{\sv@year}{}{{\large [\sv@year]}\par}
+    \vspace{0.8cm}
+    {\Huge\bfseries\color{almaaccent}\@title\par}
+    \vspace{0.6cm}
+    \ifdefempty{\sv@lecturer}{}{{\large \sv@lecturer}\par}
+    \ifx\@author\@empty\else{\large \@author\par}\fi
+    \vspace{0.3cm}
+    {\@date\par}
+  \end{center}
+  \vspace{0.6cm}
+  \thispagestyle{empty}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\ifdefempty{\sv@shorttitle}{\sv@course}{\sv@shorttitle}}
+\fancyhead[R]{\small\nouppercase{\leftmark}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\sectionmark}[1]{\markboth{\thesection\ #1}{}}
+
+
+%=============================================================================
+%  HEADINGS AND TABLE OF CONTENTS
+%-----------------------------------------------------------------------------
+% Size, weight and colour only -- no font family is touched anywhere.
+%=============================================================================
+
+\titleformat{\section}{\Large\bfseries\color{almaaccent}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.6em}
+
+% \tocheading{Preface} -- an unnumbered heading that still reaches the TOC.
+\newcommand{\tocheading}[1]{%
+  \section*{#1}%
+  \addcontentsline{toc}{section}{#1}%
+}
+
+% \backmatter -- switch \section numbering to letters for appendices.
+% Defined by the book class but not by article; guard either way.
+\newcommand{\sv@backmatter}{%
+  \setcounter{section}{0}%
+  \renewcommand{\thesection}{\Alph{section}}%
+  \setcounter{secnumdepth}{2}%
+}
+\@ifundefined{backmatter}
+  {\newcommand{\backmatter}{\sv@backmatter}}
+  {\renewcommand{\backmatter}{\sv@backmatter}}
+
+
+%=============================================================================
+%  NUMBERED PARAGRAPHS
+%-----------------------------------------------------------------------------
+%   \para Text of the paragraph.
+%
+% Auto-numbered and \label-able, for notes where you want to point someone at
+% "paragraph 14" rather than "the bit on page 6".
+%=============================================================================
+
+\newcounter{almapara}
+\renewcommand{\thealmapara}{\arabic{almapara}}
+
+\newcommand{\para}{%
+  \par\addvspace{0.5em}%
+  \refstepcounter{almapara}%
+  \noindent{\bfseries\color{almaaccent}\thealmapara.}\hspace{0.5em}%
+  \ignorespaces
+}
+
+
+%=============================================================================
+%  LIST OF BOXES
+%-----------------------------------------------------------------------------
+% almacore numbers \boxentry call-outs and calls \almaboxlistentry, which is a
+% no-op there. Here we point that hook at a .lob file and provide
+% \listofboxes to typeset it.
+%
+% Implemented with \addcontentsline and \@starttoc rather than tocloft:
+% tocloft's \newlistof creates its own counter, which would collide with the
+% `almabox' counter almacore has already defined.
+%=============================================================================
+
+\renewcommand{\almaboxlistentry}[1]{%
+  \addcontentsline{lob}{almabox}{\protect\numberline{\thealmabox}#1}%
+}
+
+\newcommand{\l@almabox}[2]{\@dottedtocline{1}{0em}{2.3em}{#1}{#2}}
+
+\newcommand{\listofboxes}{%
+  \section*{List of Boxes}%
+  \addcontentsline{toc}{section}{List of Boxes}%
+  \@starttoc{lob}%
+}
+
+
+%=============================================================================
+%  THEOREM ENVIRONMENTS
+%-----------------------------------------------------------------------------
+% Numbered within sections, so "Proposition 3.2" tells you where to look.
+%=============================================================================
+
+% The custom head spec exists so the optional note -- the "(Debreu)" in
+% \begin{theorem}[Debreu] -- stays plain black. With the default spec it
+% inherits the accent colour from the head font, putting a second blue string
+% on the line for something that is not a heading.
+\newtheoremstyle{sv}%
+  {0.8em}{0.8em}{}{}%
+  {\bfseries\color{almaaccent}}{.}{0.5em}%
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ \normalcolor\normalfont(#3)}}
+
+\theoremstyle{sv}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{assumption}[definition]{Assumption}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{example}{Example}
+
+\endinput
