@@ -1,0 +1,60 @@
+% ===========================================================================
+% alma-micro.tex -- microeconomics notation
+% Load with \input{macros/alma-micro}
+% ===========================================================================
+
+% --- Sets and spaces -------------------------------------------------------
+\providecommand{\R}{\mathbb{R}}          % real numbers
+\providecommand{\N}{\mathbb{N}}          % natural numbers
+\providecommand{\Q}{\mathbb{Q}}          % rational numbers
+\providecommand{\Z}{\mathbb{Z}}          % integers
+\newcommand{\Rp}{\mathbb{R}_{+}}         % non-negative reals
+\newcommand{\Rpp}{\mathbb{R}_{++}}       % strictly positive reals
+
+% --- Preferences -----------------------------------------------------------
+% NOTE ON CORRECTNESS: the symbols below are the standard ones and are easy to
+% get backwards. \succsim (weakly preferred to) is the WEAK relation; \succ
+% (strictly preferred to) is the STRICT one. The previous Macro.tex had the
+% two comments swapped, and named the weak relation \pref and the strict one
+% \weakpref -- both misleading. The names here say what they mean.
+\newcommand{\weakpref}{\succsim}         % x \weakpref y : x at least as good as y
+\newcommand{\strictpref}{\succ}          % x \strictpref y : x strictly better than y
+\newcommand{\indiff}{\sim}               % x \indiff y     : indifferent
+\newcommand{\weakprefby}{\precsim}       % converse of \weakpref
+\newcommand{\strictprefby}{\prec}        % converse of \strictpref
+\newcommand{\UCS}{\mathrm{UCS}}          % upper contour set
+\newcommand{\LCS}{\mathrm{LCS}}          % lower contour set
+
+% --- Utility and demand ----------------------------------------------------
+\newcommand{\uof}[1]{u\!\left(#1\right)}        % utility u(x)
+\newcommand{\Ubar}{\overline{u}}                % fixed utility level
+\newcommand{\Vof}[1]{v\!\left(#1\right)}        % indirect utility v(p,w)
+\newcommand{\eof}[2]{e\!\left(#1,#2\right)}     % expenditure function e(p,u)
+\newcommand{\xof}[1]{x\!\left(#1\right)}        % demand x(.)
+\newcommand{\Xof}[2]{x\!\left(#1,#2\right)}     % Walrasian demand x(p,w)
+\newcommand{\hof}[2]{h\!\left(#1,#2\right)}     % Hicksian demand h(p,u)
+\newcommand{\MRS}{\mathrm{MRS}}                 % marginal rate of substitution
+\newcommand{\MRT}{\mathrm{MRT}}                 % marginal rate of transformation
+
+% --- Operators -------------------------------------------------------------
+\newcommand{\st}{\;\text{s.t.}\;}               % subject to
+\newcommand{\limn}{\lim_{n\to\infty}}           % limit as n -> infinity
+\newcommand{\argmax}{\operatorname*{arg\,max}}
+\newcommand{\argmin}{\operatorname*{arg\,min}}
+
+% --- Formatting helpers ----------------------------------------------------
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\paren}[1]{\left(#1\right)}
+\newcommand{\brak}[1]{\left[#1\right]}
+\newcommand{\bi}[1]{\boldsymbol{#1}}            % bold vector
+
+% --- Calculus --------------------------------------------------------------
+\newcommand{\pder}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\der}[2]{\frac{d #1}{d #2}}
+\newcommand{\lagr}{\mathcal{L}}                 % Lagrangian
+
+% --- Misc ------------------------------------------------------------------
+\newcommand{\defeq}{\vcentcolon=}
+\newcommand{\eqdef}{=\vcentcolon}

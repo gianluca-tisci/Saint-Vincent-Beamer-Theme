@@ -1,0 +1,61 @@
+% ===========================================================================
+% alma-metrics.tex -- econometrics notation
+% Load with \input{macros/alma-metrics}
+% Requires amsmath + amssymb (almacore loads both).
+% ===========================================================================
+
+% --- Estimators and parameters ---------------------------------------------
+\newcommand{\bhat}{\hat{\beta}}
+\newcommand{\bhatk}[1]{\hat{\beta}_{#1}}
+\newcommand{\betaOLS}{\hat{\beta}^{\mathrm{OLS}}}
+\newcommand{\betaIV}{\hat{\beta}^{\mathrm{IV}}}
+\newcommand{\betaGMM}{\hat{\beta}^{\mathrm{GMM}}}
+\newcommand{\betaML}{\hat{\beta}^{\mathrm{ML}}}
+\newcommand{\est}[1]{\hat{#1}}                 % generic estimator
+\newcommand{\btrue}{\beta_{0}}                 % true parameter
+
+% --- Convergence -----------------------------------------------------------
+\newcommand{\plim}{\operatorname*{plim}}
+\newcommand{\convp}{\xrightarrow{\;p\;}}       % converges in probability
+\newcommand{\convd}{\xrightarrow{\;d\;}}       % converges in distribution
+\newcommand{\convas}{\xrightarrow{\;a.s.\;}}   % almost sure convergence
+\newcommand{\convLtwo}{\xrightarrow{\;L^2\;}}  % mean-square convergence
+\newcommand{\asim}{\overset{a}{\sim}}          % asymptotically distributed as
+\newcommand{\iid}{\overset{iid}{\sim}}
+
+% --- Moments and inference -------------------------------------------------
+% \Var, \Cov and \E come from almacore.
+\newcommand{\Avar}{\operatorname{Avar}}        % asymptotic variance
+\newcommand{\Corr}{\operatorname{Corr}}
+\newcommand{\se}[1]{\operatorname{se}\!\left(#1\right)}
+\newcommand{\SE}{\mathrm{SE}}
+\newcommand{\MSE}{\mathrm{MSE}}
+\newcommand{\RSS}{\mathrm{RSS}}
+\newcommand{\ESS}{\mathrm{ESS}}
+\newcommand{\TSS}{\mathrm{TSS}}
+\newcommand{\Rsq}{R^{2}}
+\newcommand{\Rsqadj}{\bar{R}^{2}}
+
+% --- Distributions ---------------------------------------------------------
+\newcommand{\Normal}{\mathcal{N}}
+\newcommand{\chisq}[1]{\chi^{2}_{#1}}
+\newcommand{\Unif}{\mathrm{U}}
+\newcommand{\Bern}{\mathrm{Bernoulli}}
+
+% --- Matrix notation -------------------------------------------------------
+\newcommand{\Xmat}{\mathbf{X}}
+\newcommand{\yvec}{\mathbf{y}}
+\newcommand{\evec}{\boldsymbol{\varepsilon}}
+\newcommand{\bvec}{\boldsymbol{\beta}}
+\newcommand{\Imat}[1][]{\mathbf{I}_{#1}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\trans}{^{\prime}}                 % transpose, econ convention
+\newcommand{\inv}{^{-1}}
+
+% --- Sample operators ------------------------------------------------------
+\newcommand{\En}{\mathbb{E}_{n}}               % sample mean operator
+\newcommand{\ybar}{\bar{y}}
+\newcommand{\xbar}{\bar{x}}
+\newcommand{\sumn}{\sum_{i=1}^{n}}
+\newcommand{\sumT}{\sum_{t=1}^{T}}

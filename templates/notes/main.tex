@@ -1,0 +1,130 @@
+% ===========================================================================
+%  Saint Vincent lecture notes -- demo document
+%
+%  Build:  latexmk -pdf main.tex
+%
+%  Options:
+%    \usepackage{svnotes}             working draft (memos visible)
+%    \usepackage[hidememo]{svnotes}   clean build
+% ===========================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{svnotes}
+
+% Notation modules -- load only what the course needs.
+\input{macros/alma-micro}
+% \input{macros/alma-metrics}
+% \input{macros/alma-macro}
+
+\course{LM in Economics and Econometrics}
+\academicyear{2025--2026}
+\lecturer{Lecture notes}
+\shorttitle{Consumer Theory}
+
+\title{Consumer Theory}
+\author{Gianluca Tisci}
+\date{\today}
+
+\renewcommand{\memouser}{Gianluca}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\listofboxes
+
+\tocheading{Preface}
+
+These notes accompany the consumer-theory block of the course. They use the
+same core package as the slide theme and the problem-set template, so a
+definition looks identical wherever it appears.
+
+\section{Preferences}
+
+\para A preference relation $\weakpref$ on a choice set $X$ is a binary
+relation read as ``at least as good as''. \memo{add the axioms table here}
+
+\para Two derived relations follow. Strict preference $\strictpref$ holds when
+$x \weakpref y$ but not $y \weakpref x$; indifference $\indiff$ holds when
+both directions hold.
+
+\begin{definition}[Rational preferences]
+A preference relation $\weakpref$ is \lapis{rational} if it is complete and
+transitive.
+\end{definition}
+
+\begin{proposition}
+If $\weakpref$ is rational then $\strictpref$ is irreflexive and transitive,
+and $\indiff$ is an equivalence relation.
+\end{proposition}
+
+\begin{proof}
+Immediate from completeness and transitivity. \qedhere
+\end{proof}
+
+\begin{notebox}
+\boxentry{Why continuity matters}
+Rationality alone does not deliver a utility representation. Continuity rules
+out the lexicographic counterexample, and with it the jump that breaks any
+candidate representation.
+\end{notebox}
+
+\section{Utility representation}
+
+\para A function $u : X \to \R$ represents $\weakpref$ when
+$x \weakpref y \iff u(x) \ge u(y)$.
+
+\begin{theorem}[Debreu]
+A rational and continuous preference relation on a connected subset of
+$\R^n_+$ admits a continuous utility representation.
+\end{theorem}
+
+\lapisboxeq{x \weakpref y \iff u(x) \ge u(y)}
+
+\begin{remark}
+The representation is unique only up to a strictly increasing transformation.
+\end{remark}
+
+\begin{notebox}
+\boxentry{Ordinal, not cardinal}
+Nothing in the representation licenses comparing utility differences across
+people, or even across bundles for one person.
+\end{notebox}
+
+\section{Demand}
+
+\para The Walrasian demand correspondence solves
+$\max_{x} \uof{x}$ subject to $p \cdot x \le w$. \NB{add the Lagrangian}
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[econaxis, xlabel={$x_1$}, ylabel={$x_2$},
+                 xmin=0, xmax=3.2, ymin=0, ymax=5.6,
+                 restrict y to domain=0:6]
+      \addplot[almacurve, domain=0:3, samples=150] {-x^2 + 4};
+      \addplot[almacurve, domain=0:3, samples=150] {-x^2 + 5};
+      \addplot[almaconstraint, domain=0:3] {4.5 - 1.5*x};
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Indifference curves and the budget line.}
+  \label{fig:demand}
+\end{figure}
+
+\result{$x^{\ast}(p,w) = \dfrac{w}{2p}$ under Cobb--Douglas with $\alpha = 1/2$.}
+
+\backmatter
+
+\section{Notation}
+
+A short reference for the symbols used above.
+
+\begin{itemize}[nosep]
+  \item $\weakpref$ --- weak preference (at least as good as)
+  \item $\strictpref$ --- strict preference
+  \item $\indiff$ --- indifference
+  \item $\UCS$ --- upper contour set
+\end{itemize}
+
+\end{document}

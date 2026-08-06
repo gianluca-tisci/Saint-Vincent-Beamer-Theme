@@ -1,0 +1,185 @@
+%----------------------------------------------------------------------------
+%  Saint Vincent Beamer theme -- demo deck
+%
+%  Build:  latexmk -pdf Main.tex
+%          (runs bibtex automatically; needs two passes for the TOC)
+%
+%  Theme options:
+%    \usetheme{SaintVincent}                    default (light)
+%    \usetheme[night]{SaintVincent}             dark colour scheme
+%    \usetheme[nosectionslides]{SaintVincent}   no divider slide per section
+%    \usetheme[hidememo]{SaintVincent}          hide \memo / \NB annotations
+%----------------------------------------------------------------------------
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{SaintVincent}
+
+%----------------------------------------------------------------------------
+%  NOTES
+%----------------------------------------------------------------------------
+%\setbeameroption{hide notes}                        % slides only
+%\setbeameroption{show only notes}                   % notes only
+%\setbeameroption{show notes on second screen=right} % both
+
+%----------------------------------------------------------------------------
+%  TITLE
+%----------------------------------------------------------------------------
+\title{Saint Vincent Theme}
+\subtitle{A clean Beamer theme for economics}
+\author{Gianluca Tisci}
+\institute{Alma Mater Studiorum --- University of Bologna\\
+           Bachelor in Economics and Finance}
+\date{\today}
+
+\renewcommand{\memouser}{Gianluca}
+
+\begin{document}
+
+\begin{frame}[plain, noframenumbering]
+  \titlepage
+\end{frame}
+
+\begin{frame}{Overview}
+  \tableofcontents
+\end{frame}
+
+%------------------------------------------------
+\section{Theme basics}
+%------------------------------------------------
+
+\begin{frame}{Bullet points}{With a subtitle}
+  \begin{itemize}
+    \item First point
+    \item Second point
+      \begin{itemize}
+        \item A nested point
+      \end{itemize}
+    \item Third point
+  \end{itemize}
+  \note[item]{Speaker notes still work as usual.}
+\end{frame}
+
+\begin{frame}{Blocks}
+  Some text will be \alert{highlighted} because it matters. Do not overdo it.
+
+  \begin{block}{Block}
+    Carries the theme accent.
+  \end{block}
+
+  \begin{alertblock}{Alert block}
+    The one place a second colour is warranted --- an alert that looks like
+    everything else is not an alert.
+  \end{alertblock}
+
+  \begin{examples}
+    Neutral, rather than introducing a third hue.
+  \end{examples}
+\end{frame}
+
+\begin{frame}{Two columns}
+  \begin{columns}[t]
+    \column{.45\textwidth}
+      \textbf{Heading}
+      \begin{enumerate}
+        \item Statement
+        \item Explanation
+        \item Example
+      \end{enumerate}
+    \column{.45\textwidth}
+      The theme loads no font package, so slides use Beamer's own default
+      family. Everything is styled by size, weight and colour only.
+  \end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{Shared features}
+%------------------------------------------------
+
+\begin{frame}{Pencil marks and results}
+  These come from \texttt{almacore}, so they behave identically here, in the
+  lecture-notes class and in the problem-set template.
+
+  \medskip
+  Underline a \lapis{key phrase}, or box \lapisbox{a definition}.
+
+  \lapisboxeq{\max_{x}\; u(x) \quad \text{s.t.} \quad p \cdot x \le w}
+
+  \result{$x^{\ast} = w / 2p$}
+\end{frame}
+
+\begin{frame}[fragile]{Call-outs, code and annotations}
+  \begin{notebox}
+    \boxentry{Why one core}
+    The colours, pencil marks and call-outs live in a single class-agnostic
+    package, so the slide theme and the notes class cannot drift apart.
+  \end{notebox}
+
+  \begin{code}
+regress price mpg weight, robust
+  \end{code}
+
+  A draft note: \memo{tighten this slide} and \NB{add citation}.
+\end{frame}
+
+\begin{frame}{Table}
+  \begin{table}
+    \centering
+    \begin{tabular}{lll}
+      \toprule
+      \textbf{Treatment} & \textbf{Response 1} & \textbf{Response 2} \\
+      \midrule
+      Treatment 1 & 0.0003262 & 0.562 \\
+      Treatment 2 & 0.0015681 & 0.910 \\
+      Treatment 3 & 0.0009271 & 0.296 \\
+      \bottomrule
+    \end{tabular}
+    \caption{Table caption}
+  \end{table}
+\end{frame}
+
+\begin{frame}{Figure}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[econaxis, xlabel={$x_1$}, ylabel={$x_2$},
+                   xmin=0, xmax=3.2, ymin=0, ymax=5.6,
+                   width=8cm, height=5cm,
+                   restrict y to domain=0:6]
+        \addplot[almacurve, domain=0:3, samples=100] {-x^2 + 4};
+        \addplot[almacurve, domain=0:3, samples=100] {-x^2 + 5};
+        \addplot[almaconstraint, domain=0:3] {4.5 - 1.5*x};
+      \end{axis}
+    \end{tikzpicture}
+    \caption{Indifference curves and a budget line.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Theorem}
+  \begin{theorem}[Mass--energy equivalence]
+    $E = mc^2$
+  \end{theorem}
+\end{frame}
+
+\begin{frame}[fragile]{Citation}
+  An example of the \verb|\cite| command:
+
+  \medskip
+  This statement requires a citation \cite{p1}.
+\end{frame}
+
+\begin{frame}{References}
+  \footnotesize
+  % \bibliographystyle must come before \bibliography, and the argument takes
+  % no .bib extension -- the original had both the wrong way round, which is
+  % why the citation never resolved.
+  \bibliographystyle{apalike}
+  \bibliography{reference}
+\end{frame}
+
+\begin{frame}[plain, noframenumbering]
+  \vfill
+  \centering{\Huge\bfseries\color{svaccent} Thank you}
+  \vfill
+\end{frame}
+
+\end{document}
