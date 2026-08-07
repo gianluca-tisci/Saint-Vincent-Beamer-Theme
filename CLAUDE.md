@@ -66,11 +66,12 @@ apt-get install -y --no-install-recommends texlive-latex-base \
 
 ## Gotchas hit while building this
 
-- The pencil decoration is `snake` (a smooth sine), NOT `random steps`. At the
-  small segment lengths inline text needs, random steps is high-frequency
-  noise and boxes look like a bad scan. Two traps: `segment length` is the
-  wavelength, so a long one fails with "Dimension too large" on paths shorter
-  than one wave; and `decorate` plus `rounded corners` throws the same error.
+- The pencil is `random steps` with a LONG segment (3mm) and a tiny amplitude
+  (0.2pt) on a 0.9pt line at `!80`. Frequency is what matters: short segments
+  give per-point noise, and `snake` at a 1.3mm wavelength corrugates a short
+  box and kinks at corners. Two traps: `snake`'s segment length is a
+  WAVELENGTH, so a long one fails with "Dimension too large" on short paths;
+  and `decorate` plus `rounded corners` throws the same error.
 - `\ifx\foo\empty` is false for a `\newcommand`-defined empty macro —
   `\newcommand` makes `\long` macros and `\empty` is not `\long`, so `\ifx`
   compares the prefixes. Use etoolbox's `\ifdefempty`.

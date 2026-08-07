@@ -49,7 +49,7 @@
 \RequirePackage{kvoptions}
 \SetupKeyvalOptions{family=alma, prefix=alma@}
 
-\DeclareStringOption[0.3]{wiggle}
+\DeclareStringOption[0.2]{wiggle}
 \DeclareBoolOption{hidememo}
 \DeclareBoolOption{nographs}
 \ProcessKeyvalOptions*
@@ -117,29 +117,40 @@
 %=============================================================================
 %  PENCIL DECORATION
 %-----------------------------------------------------------------------------
-% `snake' is a SMOOTH sinusoidal perturbation, and that is the whole point.
-% An earlier version used `random steps' at a 1.2pt segment length, which is
-% high-frequency noise rather than a hand movement -- boxes came out looking
-% like a bad scan instead of a pencil stroke. A gentle sine at ~1.3mm
-% wavelength and a third of a point of amplitude reads as a drawn line.
+% The target is a box that reads as drawn by hand with a ruler: long, nearly
+% straight runs, tiny jogs between them, and corners that meet cleanly. NOT a
+% wavy line.
 %
-% Two constraints worth knowing before changing these numbers:
-%   - segment length is the WAVELENGTH. Make it long (say 5mm) and any path
-%     shorter than one wavelength fails with "Dimension too large" -- which
-%     inline text, being arbitrarily short, regularly is. Keep it small.
-%   - never combine `decorate' with `rounded corners': that combination also
-%     throws "Dimension too large".
+% Two earlier attempts got this wrong, both for the same underlying reason --
+% the wobble frequency was high relative to the length of the thing being
+% drawn:
+%   - `random steps' at a 1.2pt segment length is per-point noise; a box came
+%     out looking like a bad scan.
+%   - `snake' at a 1.3mm wavelength puts ten full waves across a box the width
+%     of "574.07", which reads as corrugation, and its corners kink.
+%
+% What works is a LONG segment (3mm) with a very small amplitude (0.2pt) on a
+% slightly heavy line (0.9pt), drawn at !80 so the stroke reads as pencil
+% rather than ink. On any inline box that is a couple of segments at most, so
+% each side stays essentially straight.
+%
+% Do not raise the segment length much further, and do not switch back to
+% `snake': its segment length is a WAVELENGTH, and any path shorter than one
+% wave fails with "Dimension too large" -- which inline text regularly is.
+% Also never combine `decorate' with `rounded corners': same error.
 %=============================================================================
 
 \tikzset{
   almapencil/.style={
-    line width=0.6pt,
+    line width=0.9pt,
     decorate,
-    decoration={snake, segment length=1.3mm, amplitude=\almawiggleamp}
+    decoration={random steps, segment length=3mm, amplitude=\almawiggleamp}
   },
   % Zero-padding anchor for inline text, so overlays track the glyph bounds.
   almanode/.style={inner sep=0pt, outer sep=0pt, anchor=base},
-  almaboxnode/.style={inner xsep=2.5pt, inner ysep=1.5pt, outer sep=0pt, anchor=base},
+  % Tight padding, and a \strut in the content, so a box hugs its text and
+  % keeps the same height whether or not the text has ascenders/descenders.
+  almaboxnode/.style={inner xsep=1.2pt, inner ysep=1.4pt, outer sep=0pt, anchor=base},
 }
 
 
@@ -156,21 +167,29 @@
 %=============================================================================
 
 % --- \lapis[<colour>]{<text>} -----------------------------------------------
-% Hand-drawn underline beneath inline text.
+% Hand-drawn underline beneath inline text. Sits 0.5ex below the baseline, so
+% it clears descenders instead of striking through them.
 \newcommand{\lapis}[2][almaaccent]{%
   \tikz[baseline=(almaX.base)]{%
     \node[almanode] (almaX) {#2};
-    \draw[almapencil, #1]
-      ([yshift=-1.5pt]almaX.south west) -- ([yshift=-1.5pt]almaX.south east);
+    \draw[almapencil, #1!80]
+      ([yshift=-0.5ex]almaX.base west) -- ([yshift=-0.5ex]almaX.base east);
   }%
 }
 
 % --- \lapisbox[<colour>]{<text>} --------------------------------------------
 % Hand-drawn box around inline text.
+%
+% \raisebox{0pt}[0pt][0pt] stops the box contributing any height or depth to
+% the surrounding line, so a boxed word mid-paragraph does not open the line
+% spacing above and below it. \strut keeps the box the same height whatever
+% the text inside happens to have.
 \newcommand{\lapisbox}[2][almaaccent]{%
-  \tikz[baseline=(almaX.base)]{%
-    \node[almaboxnode] (almaX) {#2};
-    \draw[almapencil, #1] (almaX.south west) rectangle (almaX.north east);
+  \raisebox{0pt}[0pt][0pt]{%
+    \tikz[baseline=(almaX.base)]{%
+      \node[almaboxnode] (almaX) {\strut #2};
+      \draw[almapencil, #1!80] (almaX.south west) rectangle (almaX.north east);
+    }%
   }%
 }
 
@@ -180,21 +199,21 @@
 \newcommand{\lapisboxeq}[2][almaaccent]{%
   \begin{equation*}
     \tikz[baseline=(almaX.base)]{%
-      \node[almaboxnode] (almaX) {$\displaystyle #2$};
-      \draw[almapencil, #1] (almaX.south west) rectangle (almaX.north east);
+      \node[almaboxnode, inner xsep=4pt, inner ysep=3pt] (almaX) {$\displaystyle #2$};
+      \draw[almapencil, #1!80] (almaX.south west) rectangle (almaX.north east);
     }%
   \end{equation*}
 }
 
 % --- \result{<content>} -----------------------------------------------------
-% Prominent boxed final answer. Not a Jambro feature -- added because the
-% single most useful thing a problem set can do for whoever grades it is make
-% the final answer impossible to miss. Accepts text or math.
+% Prominent boxed final answer -- the single most useful thing a problem set
+% can do for whoever grades it is make the final answer impossible to miss.
+% Accepts text or math.
 \newcommand{\result}[1]{%
   \begin{center}
     \tikz{%
-      \node[almaboxnode, inner xsep=6pt, inner ysep=4pt] (almaX) {#1};
-      \draw[almapencil, almaaccent, line width=0.9pt]
+      \node[almaboxnode, inner xsep=6pt, inner ysep=4pt] (almaX) {\strut #1};
+      \draw[almapencil, almaaccent, line width=1.1pt]
         (almaX.south west) rectangle (almaX.north east);
     }%
   \end{center}
