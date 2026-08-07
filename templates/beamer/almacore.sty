@@ -221,6 +221,138 @@
 
 
 %=============================================================================
+%  HANDWRITING
+%-----------------------------------------------------------------------------
+% \hand is a SCOPED font switch, not a package load. It never touches
+% \familydefault, \rmdefault or \sfdefault, so body text and headings keep
+% whatever the document class gives them -- the family only changes inside the
+% group you put it in:
+%
+%     {\hand a comment in the margin}
+%
+% The font is Augie, which ships with TeX Live (texlive-fonts-extra on
+% Debian/Ubuntu, present by default on Overleaf and full MacTeX). On a
+% minimal install: tlmgr install augie.
+%
+% It works under the default OT1 encoding, so this package still does not
+% load fontenc -- loading [T1]{fontenc} would silently move the body from
+% Computer Modern to EC, which is exactly the kind of font change the rest of
+% this family avoids.
+%=============================================================================
+
+% Augie lives in texlive-fonts-extra, which a minimal TeX install may not
+% have. Rather than let the document fail (or silently typeset the comments in
+% the body font, which looks like a mistake rather than a choice), fall back
+% to italic and say so once at the top of the log.
+\IfFileExists{ot1augie.fd}{%
+  \newcommand{\hand}{\fontfamily{augie}\selectfont}%
+}{%
+  \newcommand{\hand}{\itshape}%
+  \PackageWarningNoLine{almacore}{%
+    The Augie handwriting font was not found, so \string\hand\space falls back
+    to italic.\MessageBreak
+    Install it with: tlmgr install augie\MessageBreak
+    or, on Debian/Ubuntu: apt install texlive-fonts-extra%
+  }%
+}
+
+% \handbold[<stroke>]{<text>} -- Augie has no bold shape, so weight is faked
+% by stroking the glyph outline as well as filling it. The stroke width is in
+% pt; 0.3 is a light emphasis, 0.6 is heavy.
+%
+% Text stroking is a pdfTeX primitive. Under an engine that lacks it the
+% command degrades to plain handwriting rather than failing.
+\newcommand{\handbold}[2][0.3]{%
+  \begingroup\hand
+    \ifcsname pdfliteral\endcsname
+      \pdfliteral direct{2 Tr #1 w}#2\pdfliteral direct{0 Tr}%
+    \else
+      #2%
+    \fi
+  \endgroup
+}
+
+
+%=============================================================================
+%  ANNOTATION ARROWS AND MARKERS
+%-----------------------------------------------------------------------------
+% The pattern from the reference theme: name something in the text, then draw
+% a pencil arrow to a handwritten comment beside it.
+%
+%     The coefficient \marker{b1}{\lapisbox{21.15}} is large.
+%     \handnote{b1}{1.6,0.9}{a comment from the north}
+%
+% \marker names any content without drawing anything, so it composes with
+% \lapisbox (as above) or wraps bare text.
+%
+% NOTE THE ARROW DIRECTION: the head lands on the thing being annotated, not
+% on the comment. So the comment node is placed first and the arrow is drawn
+% FROM it TO the marker. \handnote does that for you; the long form is:
+%
+%     \begin{almaoverlay}
+%       \node[anchor=west] (c) at ([shift={(1.6,0.9)}]b1.north east)
+%         {\hand a comment};
+%       \draw[almaarrow] (c.south west) to[bend left=20] (b1.north east);
+%     \end{almaoverlay}
+%
+% Use the long form when the comment sits left of or below its target, where
+% a different node anchor is wanted.
+%
+% TWO PASSES. almaoverlay uses `remember picture', so positions resolve on the
+% second run -- the same contract as \tableofcontents. latexmk handles it.
+%=============================================================================
+
+\tikzset{
+  % The arrowhead is drawn separately from the decorated shaft: `decorate'
+  % mangles an arrow tip, so the tip is added with arrows.meta on top.
+  almaarrow/.style={
+    almapencil, line width=0.7pt, almaaccent!80,
+    -{Stealth[length=5pt, round]}
+  },
+}
+
+% \marker{<name>}{<content>} -- typeset content and give it a TikZ node name
+% that a later almaoverlay can point at.
+\newcommand{\marker}[2]{%
+  \tikz[baseline=(#1.base), remember picture]{\node[almanode] (#1) {#2};}%
+}
+
+\newenvironment{almaoverlay}
+  {\begin{tikzpicture}[overlay, remember picture]}
+  {\end{tikzpicture}}
+
+% \handnote[<bend>]{<marker>}{<dx,dy>}{<text>} -- the common case in one line:
+% a handwritten comment up and to the right of its target, with an arrow back
+% down to it. Offset is in cm from the marker's north east corner.
+%
+%   \handnote{b1}{1.6,0.9}{a comment from the north}
+%   \handnote[bend right=25]{b2}{1.8,-0.9}{a comment from the south}
+%
+% For a comment to the LEFT of its target, use the long form in the comment
+% block above and set anchor=east on the node.
+\newcommand{\handnote}[4][bend left=20]{%
+  \begin{almaoverlay}
+    \node[anchor=west, inner sep=2pt, text=almaaccent!85] (alma@hn)
+      at ([shift={(#3)}]#2.north east) {\hand #4};
+    \draw[almaarrow] (alma@hn.south west) to[#1] (#2.north east);
+  \end{almaoverlay}%
+}
+
+% --- Inline sketch arrows ---------------------------------------------------
+% Short pencil arrows for running text: "GDP growth \handarrowup{} accelerated".
+% Follow with \ or {} to keep the trailing space.
+\newcommand{\alma@inarrow}[1]{%
+  \tikz[baseline=-0.55ex]{%
+    \draw[almapencil, line width=0.7pt, almaaccent!80,
+          -{Stealth[length=4pt, round]}] (0,0) -- #1;}%
+}
+\newcommand{\handarrowup}{\alma@inarrow{(0.30,0.34)}}
+\newcommand{\handarrowdown}{\alma@inarrow{(0.30,-0.34)}}
+\newcommand{\handarrowright}{\alma@inarrow{(0.45,0)}}
+\newcommand{\handarrowleft}{\alma@inarrow{(-0.45,0)}}
+
+
+%=============================================================================
 %  NOTEBOX -- shaded call-out
 %-----------------------------------------------------------------------------
 % Breakable, so a long call-out splits across a page instead of overflowing.

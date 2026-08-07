@@ -23,8 +23,9 @@ cd Saint-Vincent-Beamer-Theme/templates/beamer && latexmk -pdf Main.tex
 cd ../notes && latexmk -pdf main.tex
 ```
 
-Requires `tcolorbox`, `pgfplots`, `titlesec` and `comment` — all in full TeX
-Live and MacTeX.
+Requires `tcolorbox`, `pgfplots`, `titlesec` and the `augie` font — all in
+full TeX Live, MacTeX and Overleaf. Annotation arrows need two passes;
+`latexmk` handles that.
 
 ---
 
@@ -40,7 +41,7 @@ Live and MacTeX.
 | `night` | dark colour scheme |
 | `nosectionslides` | no divider slide at each `\section` |
 | `hidememo` | suppress `\memo` and `\NB` annotations |
-| `wiggle=<n>` | pencil amplitude in pt (default `0.4`) |
+| `wiggle=<n>` | pencil amplitude in pt (default `0.2`) |
 | `nographs` | skip pgfplots for faster compiles |
 
 The theme is **standalone**. Earlier versions of this repository called
@@ -78,6 +79,10 @@ numbered within sections, so "Proposition 3.2" tells you where to look.
 | `\lapisbox[c]{text}` | hand-drawn box around inline text |
 | `\lapisboxeq[c]{math}` | hand-drawn box around display math |
 | `\result{...}` | prominent boxed result |
+| `{\hand ...}`, `\handbold[stroke]{text}` | handwriting, scoped to the group |
+| `\marker{name}{content}` + `\handnote[bend]{name}{dx,dy}{text}` | handwritten comment with an arrow back to the target |
+| `\handarrowup` / `down` / `left` / `right` | short inline arrows |
+| `almaoverlay` (env) + `almaarrow` style | draw your own annotation arrows |
 | `notebox` + `\boxentry{title}` | breakable shaded call-out, numbered |
 | `\memo{...}`, `\NB{...}` | draft annotations, hidden by `hidememo` |
 | `code`, `\mc{...}`, `\mci\|...\|` | code block and inline chips |
@@ -102,18 +107,22 @@ core serve a slide theme and an article class without either drifting.
 
 ## Fonts
 
-Nothing here loads a font package or changes `\familydefault`. Slides use
-Beamer's default family, notes use the article class default. Everything is
-styled by size, weight and colour only — which keeps compiles fast and avoids
-the missing-font failures that font-switching themes hit on Overleaf.
+Nothing changes `\familydefault`. Slides use Beamer's default family, notes
+the article class default; everything is styled by size, weight and colour
+only.
+
+`\hand` is the one deliberate exception, and it is a *scoped* switch — the
+Augie handwriting font applies only inside the group you put it in, never to
+the document. If Augie is missing, `\hand` degrades to italic with a warning
+instead of failing.
 
 ## Colours
 
 One accent — a dark blue, defined once as `almaaccent` in `almacore.sty`.
 Change it there and slides, notes and the problem-set template all follow.
 
-Alert blocks and `\memo` are the only second colour, and `\memo` disappears
-under `hidememo`. Tints are mixed explicitly against the theme background
+Alert blocks are the only second colour; `\memo` and `\NB` are grey and
+disappear under `hidememo`. Tints are mixed explicitly against the theme background
 (`svaccent!12!svbg`, not `svaccent!12`) so night mode stays dark.
 
 ---
