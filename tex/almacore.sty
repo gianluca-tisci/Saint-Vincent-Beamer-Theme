@@ -148,9 +148,38 @@
   },
   % Zero-padding anchor for inline text, so overlays track the glyph bounds.
   almanode/.style={inner sep=0pt, outer sep=0pt, anchor=base},
-  % Tight padding, and a \strut in the content, so a box hugs its text and
-  % keeps the same height whether or not the text has ascenders/descenders.
-  almaboxnode/.style={inner xsep=1.2pt, inner ysep=1.4pt, outer sep=0pt, anchor=base},
+  % Padding is generous on purpose. A box drawn tight against its contents
+  % reads as a table cell, and a tall fraction or integral ends up with its
+  % rule almost touching the frame. A \strut in the content keeps short boxes
+  % the same height as their neighbours.
+  almaboxnode/.style={inner xsep=3.5pt, inner ysep=3pt, outer sep=0pt, anchor=base},
+}
+
+
+%=============================================================================
+%  SKETCHED RECTANGLE
+%-----------------------------------------------------------------------------
+% \alma@sketchbox{<node>}{<extra draw options>}
+%
+% Each side is a SEPARATE stroke that starts a little before its corner and
+% finishes a little after it, so the corners cross rather than meet. That
+% overshoot is what makes a rectangle read as drawn by hand: a single
+% `rectangle' path, however well decorated, still has four mathematically
+% perfect corners and looks mechanical.
+%
+% The offsets are deliberately asymmetric and around 1pt. Past roughly 1.5pt
+% the box stops looking hand-drawn and starts looking careless.
+%=============================================================================
+
+\newcommand{\alma@sketchbox}[2]{%
+  \draw[almapencil, #2]
+    ([shift={(-1.1pt,-0.5pt)}]#1.south west) -- ([shift={( 0.9pt, 0.4pt)}]#1.south east);
+  \draw[almapencil, #2]
+    ([shift={( 0.5pt,-1.2pt)}]#1.south east) -- ([shift={(-0.4pt, 1.0pt)}]#1.north east);
+  \draw[almapencil, #2]
+    ([shift={( 1.0pt, 0.5pt)}]#1.north east) -- ([shift={(-0.9pt,-0.4pt)}]#1.north west);
+  \draw[almapencil, #2]
+    ([shift={(-0.5pt, 1.1pt)}]#1.north west) -- ([shift={( 0.4pt,-1.0pt)}]#1.south west);
 }
 
 
@@ -188,7 +217,7 @@
   \raisebox{0pt}[0pt][0pt]{%
     \tikz[baseline=(almaX.base)]{%
       \node[almaboxnode] (almaX) {\strut #2};
-      \draw[almapencil, #1!80] (almaX.south west) rectangle (almaX.north east);
+      \alma@sketchbox{almaX}{#1!80}%
     }%
   }%
 }
@@ -199,8 +228,8 @@
 \newcommand{\lapisboxeq}[2][almaaccent]{%
   \begin{equation*}
     \tikz[baseline=(almaX.base)]{%
-      \node[almaboxnode, inner xsep=4pt, inner ysep=3pt] (almaX) {$\displaystyle #2$};
-      \draw[almapencil, #1!80] (almaX.south west) rectangle (almaX.north east);
+      \node[almaboxnode, inner xsep=7pt, inner ysep=5pt] (almaX) {$\displaystyle #2$};
+      \alma@sketchbox{almaX}{#1!80}%
     }%
   \end{equation*}
 }
@@ -212,9 +241,8 @@
 \newcommand{\result}[1]{%
   \begin{center}
     \tikz{%
-      \node[almaboxnode, inner xsep=6pt, inner ysep=4pt] (almaX) {\strut #1};
-      \draw[almapencil, almaaccent, line width=1.1pt]
-        (almaX.south west) rectangle (almaX.north east);
+      \node[almaboxnode, inner xsep=10pt, inner ysep=7pt] (almaX) {\strut #1};
+      \alma@sketchbox{almaX}{almaaccent, line width=1.1pt}%
     }%
   \end{center}
 }

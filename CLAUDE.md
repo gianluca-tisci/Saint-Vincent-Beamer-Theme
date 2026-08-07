@@ -69,6 +69,10 @@ apt-get install -y --no-install-recommends texlive-latex-base \
 
 ## Gotchas hit while building this
 
+- Boxes are drawn as FOUR separate strokes whose corners overshoot by ~1pt
+  (`\alma@sketchbox`), not as one `rectangle` path. A single path keeps four
+  mathematically perfect corners and reads as mechanical however well it is
+  decorated. Past ~1.5pt of overshoot it reads as careless instead.
 - The pencil is `random steps` with a LONG segment (3mm) and a tiny amplitude
   (0.2pt) on a 0.9pt line at `!80`. Frequency is what matters: short segments
   give per-point noise, and `snake` at a 1.3mm wavelength corrugates a short
