@@ -29,6 +29,9 @@ themes into two 50KB files with duplicated colour and pencil code.
   The ONE exception is `\hand`, a scoped `\fontfamily{augie}` switch for
   handwritten annotations, which never leaks outside its group. Augie ships in
   `texlive-fonts-extra`; if absent it degrades to italic with a warning.
+- **Annotations have their own ink.** `almanoteink` (amber) carries
+  handwritten comments and their arrows, so an annotation never reads as part
+  of the text. `\handnote`'s optional argument overrides it per comment.
 - **One accent colour, and nothing red outside alert blocks.** `almaaccent`
   in `almacore.sty` is the single knob; `\memo` and `\NB` are grey. The
   Beamer `alertblock` is the one place `almaalert` is still used, because an
@@ -69,6 +72,9 @@ apt-get install -y --no-install-recommends texlive-latex-base \
 
 ## Gotchas hit while building this
 
+- `\handnote` takes dx and dy as SEPARATE arguments, not one coordinate, so
+  the bend direction can follow the sign of dy (`\ifdim #4pt>0pt`). TeX can
+  compare a number, not a coordinate pair.
 - Boxes are drawn as FOUR separate strokes whose corners overshoot by ~1pt
   (`\alma@sketchbox`), not as one `rectangle` path. A single path keeps four
   mathematically perfect corners and reads as mechanical however well it is

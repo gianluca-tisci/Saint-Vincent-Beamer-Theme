@@ -113,6 +113,12 @@
 \definecolor{almacodebg}{HTML}{F2F2F2}  % code background
 \definecolor{almaboxbg}{HTML}{EEF3F8}   % notebox background
 \definecolor{almahighlight}{HTML}{FFE9A8} % \hl marker-pen wash
+% Annotations are deliberately NOT the accent colour. A handwritten comment is
+% a different kind of object from a heading or a boxed result -- it is someone
+% talking about the document rather than part of it -- so it gets its own ink,
+% and the arrow that carries it matches. Override per comment with the
+% optional argument of \handnote, or globally by redefining this colour.
+\definecolor{almanoteink}{HTML}{C77E02} % handwritten comments and their arrows
 
 
 %=============================================================================
@@ -149,11 +155,11 @@
   },
   % Zero-padding anchor for inline text, so overlays track the glyph bounds.
   almanode/.style={inner sep=0pt, outer sep=0pt, anchor=base},
-  % Padding is generous on purpose. A box drawn tight against its contents
-  % reads as a table cell, and a tall fraction or integral ends up with its
-  % rule almost touching the frame. A \strut in the content keeps short boxes
-  % the same height as their neighbours.
-  almaboxnode/.style={inner xsep=3.5pt, inner ysep=3pt, outer sep=0pt, anchor=base},
+  % Padding sits between two failure modes: tight against the glyphs and the
+  % box reads as a table cell; too loose and a boxed word floats inside its
+  % frame. 2.5pt/2pt clears descenders and fraction rules while still hugging
+  % the text. A \strut keeps short boxes the same height as their neighbours.
+  almaboxnode/.style={inner xsep=2.5pt, inner ysep=2pt, outer sep=0pt, anchor=base},
 }
 
 
@@ -332,7 +338,7 @@
 % a pencil arrow to a handwritten comment beside it.
 %
 %     The coefficient \marker{b1}{\lapisbox{21.15}} is large.
-%     \handnote{b1}{1.6,0.9}{a comment from the north}
+%     \handnote{b1}{1.6}{0.9}{a comment from the north}
 %
 % \marker names any content without drawing anything, so it composes with
 % \lapisbox (as above) or wraps bare text.
@@ -381,7 +387,7 @@
   % The arrowhead is drawn separately from the decorated shaft: `decorate'
   % mangles an arrow tip, so the tip is added with arrows.meta on top.
   almaarrow/.style={
-    almapencil, line width=0.7pt, almaaccent!80,
+    almapencil, line width=0.7pt, almanoteink,
     -{Stealth[length=5pt, round]}
   },
 }
@@ -396,22 +402,36 @@
   {\begin{tikzpicture}[overlay, remember picture]}
   {\end{tikzpicture}}
 
-% \handnote[<bend>]{<marker>}{<dx,dy>}{<text>} -- the common case in one line:
-% a handwritten comment up and to the right of its target, with an arrow back
-% down to it. Offset is in cm from the marker's north east corner.
+% \handnote[<colour>]{<marker>}{<dx>}{<dy>}{<text>}
 %
-%   \handnote{b1}{1.6,0.9}{a comment from the north}
-%   \handnote[bend right=25]{b2}{1.8,-0.9}{a comment from the south}
+% The common case in one line: a handwritten comment offset from its target,
+% with an arrow back to it. dx and dy are in cm from the marker's north east
+% corner.
 %
-% For a comment to the LEFT of its target, use the long form in the comment
-% block above and set anchor=east on the node.
-\newcommand{\handnote}[4][bend left=20]{%
+%   \handnote{b1}{1.5}{0.8}{a comment from the north}
+%   \handnote{b2}{1.6}{-0.9}{a comment from the south}
+%   \handnote[almaalert]{b3}{1.5}{0.8}{in a different colour}
+%
+% The comment and its arrow are drawn in almanoteink, not the document accent,
+% so an annotation never reads as part of the text it is annotating. Pass any
+% colour as the optional argument to override one comment.
+%
+% The bend direction follows the SIGN of dy, so a comment placed below its
+% target curves the right way without being told. That is the whole reason dx
+% and dy are separate arguments rather than one coordinate: TeX can compare a
+% number, not a coordinate pair.
+\newcommand{\handnote}[5][almanoteink]{%
   \begin{almaoverlay}
-    \node[anchor=west, inner sep=2pt, text=almaaccent!85] (alma@hn)
-      at ([shift={(#3)}]#2.north east) {\hand #4};
-    \draw[almaarrow] (alma@hn.south west) to[#1] (#2.north east);
+    \node[anchor=west, inner sep=2pt, text=#1] (alma@hn)
+      at ([shift={(#3,#4)}]#2.north east) {\hand #5};
+    \ifdim #4pt>0pt
+      \draw[almaarrow, #1] (alma@hn.south west) to[bend left=20] (#2.north east);
+    \else
+      \draw[almaarrow, #1] (alma@hn.west) to[bend right=20] (#2.north east);
+    \fi
   \end{almaoverlay}%
 }
+
 
 % --- Inline sketch arrows ---------------------------------------------------
 % Short pencil arrows for running text: "GDP growth \handarrowup{} accelerated".
@@ -425,7 +445,7 @@
 %   \handarrowright[line width=1.1pt]  heavier
 \newcommand{\alma@inarrow}[2][]{%
   \tikz[baseline=-0.55ex]{%
-    \draw[almapencil, almaaccent!80,
+    \draw[almapencil, almanoteink,
           -{Stealth[length=4pt, round]}, #1] (0,0) -- #2;}%
 }
 \newcommand{\handarrowup}[1][]{\alma@inarrow[#1]{(0.30,0.34)}}

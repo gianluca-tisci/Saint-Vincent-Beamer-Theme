@@ -81,7 +81,7 @@ numbered within sections, so "Proposition 3.2" tells you where to look.
 | `\result{...}` | prominent boxed result |
 | `\hl[c]{text}` | marker-pen highlight behind the text |
 | `{\hand ...}`, `\handbold[stroke]{text}` | handwriting, scoped to the group |
-| `\marker{name}{content}` + `\handnote[bend]{name}{dx,dy}{text}` | handwritten comment with an arrow back to the target |
+| `\marker{name}{content}` + `\handnote[colour]{name}{dx}{dy}{text}` | handwritten comment with an arrow back to the target |
 | `\handarrowup` / `down` / `left` / `right` | short inline arrows; take TikZ options |
 | `almaoverlay` (env) + `almaarrow` style | draw your own annotation arrows |
 | `notebox` + `\boxentry{title}` | breakable shaded call-out, numbered |
@@ -128,8 +128,11 @@ instead of failing.
 One accent — a dark blue, defined once as `almaaccent` in `almacore.sty`.
 Change it there and slides, notes and the problem-set template all follow.
 
-Alert blocks are the only second colour; `\memo` and `\NB` are grey and
-disappear under `hidememo`. Tints are mixed explicitly against the theme background
+Handwritten comments and their arrows use their own ink (`almanoteink`, an
+amber), because an annotation is someone talking *about* the document rather
+than part of it, and should not read as a heading. Override per comment with
+`\handnote[almaalert]{...}`. Alert blocks are the only other colour; `\memo`
+and `\NB` are grey and disappear under `hidememo`. Tints are mixed explicitly against the theme background
 (`svaccent!12!svbg`, not `svaccent!12`) so night mode stays dark.
 
 ---
