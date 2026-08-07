@@ -75,12 +75,12 @@ apt-get install -y --no-install-recommends texlive-latex-base \
 - `\handnote` takes dx and dy as SEPARATE arguments, not one coordinate, so
   the bend direction can follow the sign of dy (`\ifdim #4pt>0pt`). TeX can
   compare a number, not a coordinate pair.
-- Boxes are drawn as FOUR separate strokes whose corners overshoot by ~1pt
-  (`\alma@sketchbox`), not as one `rectangle` path. A single path keeps four
-  mathematically perfect corners and reads as mechanical however well it is
-  decorated. Past ~1.5pt of overshoot it reads as careless instead.
+- Boxes are drawn as FOUR separate strokes whose corners overshoot slightly
+  (`\alma@sketchbox`), not as one `rectangle` path: a single path keeps four
+  mathematically perfect corners and reads as mechanical. The overshoot is
+  0.3pt; at 1.1pt the strokes visibly cross like registration marks.
 - The pencil is `random steps` with a LONG segment (3mm) and a tiny amplitude
-  (0.2pt) on a 0.9pt line at `!80`. Frequency is what matters: short segments
+  (0.2pt) on a 0.7pt line at `!80`. Frequency is what matters: short segments
   give per-point noise, and `snake` at a 1.3mm wavelength corrugates a short
   box and kinks at corners. Two traps: `snake`'s segment length is a
   WAVELENGTH, so a long one fails with "Dimension too large" on short paths;
