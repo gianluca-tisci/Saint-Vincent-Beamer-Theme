@@ -25,7 +25,7 @@
 %% provides. Headings in the wrappers are styled by size/weight/colour only.
 %%
 %% OPTIONS
-%%   wiggle=<n>   Amplitude in pt of the hand-drawn decoration (default 0.4).
+%%   wiggle=<n>   Amplitude in pt of the hand-drawn decoration (default 0.3).
 %%                Larger = more pronounced wobble.
 %%   hidememo     Suppress every \memo and \NB, for a clean final build.
 %%   nographs     Skip loading pgfplots and the econaxis style (faster
@@ -49,7 +49,7 @@
 \RequirePackage{kvoptions}
 \SetupKeyvalOptions{family=alma, prefix=alma@}
 
-\DeclareStringOption[0.4]{wiggle}
+\DeclareStringOption[0.3]{wiggle}
 \DeclareBoolOption{hidememo}
 \DeclareBoolOption{nographs}
 \ProcessKeyvalOptions*
@@ -91,27 +91,25 @@
 %=============================================================================
 %  COLOURS
 %-----------------------------------------------------------------------------
-% Semantic names, so a document says \lapis[almaalert]{...} rather than
+% Semantic names, so a document says \lapis[almamuted]{...} rather than
 % naming a hue. Change a value here and it propagates everywhere -- this is
 % the single place to re-brand the whole family.
 %
-% ONE accent colour for everything the reader sees in a finished document:
-% headings, pencil marks, call-outs, boxed results. A graded problem set is
-% not the place for a palette -- restraint reads as competence.
+% ONE accent colour, and nothing red. Headings, pencil marks, call-outs and
+% boxed results all use almaaccent; draft annotations use grey. A graded
+% problem set is not the place for a palette.
 %
-% almaalert is the single exception. It is used ONLY by \memo, \NB and the
-% draft watermark, all of which vanish under `hidememo', so the document you
-% actually hand in still contains exactly one colour.
-%
-% almagold is defined but unused by default; pass it explicitly if you want a
-% second pencil colour, e.g. \lapis[almagold]{...}.
+% almaalert and almagold are still defined -- the Beamer theme's alertblock
+% needs a warning colour, and a document can always ask for one explicitly,
+% e.g. \lapis[almagold]{...} -- but nothing in the article templates reaches
+% for either by default.
 %=============================================================================
 
 \definecolor{almaaccent}{HTML}{1F4E79}  % the accent -- headings, pencil, boxes
 \definecolor{almanote}{HTML}{1F4E79}    % call-outs and links (same blue)
-\definecolor{almaalert}{HTML}{C43E1C}   % DRAFT-ONLY markers; never in a final build
-\definecolor{almagold}{HTML}{D9A404}    % optional second pencil colour
-\definecolor{almamuted}{HTML}{6E6E6E}   % de-emphasised text, table notes
+\definecolor{almamuted}{HTML}{6E6E6E}   % draft annotations, table notes
+\definecolor{almaalert}{HTML}{C43E1C}   % opt-in only (Beamer alertblock)
+\definecolor{almagold}{HTML}{D9A404}    % opt-in second pencil colour
 \definecolor{almacodebg}{HTML}{F2F2F2}  % code background
 \definecolor{almaboxbg}{HTML}{EEF3F8}   % notebox background
 
@@ -119,17 +117,25 @@
 %=============================================================================
 %  PENCIL DECORATION
 %-----------------------------------------------------------------------------
-% The hand-drawn look comes from PGF's built-in `random steps' decoration --
-% no custom \pgfdeclaredecoration is needed. Amplitude is driven by the
-% wiggle= option; segment length is fixed at 1.2pt, which is short enough to
-% read as texture rather than as a zigzag.
+% `snake' is a SMOOTH sinusoidal perturbation, and that is the whole point.
+% An earlier version used `random steps' at a 1.2pt segment length, which is
+% high-frequency noise rather than a hand movement -- boxes came out looking
+% like a bad scan instead of a pencil stroke. A gentle sine at ~1.3mm
+% wavelength and a third of a point of amplitude reads as a drawn line.
+%
+% Two constraints worth knowing before changing these numbers:
+%   - segment length is the WAVELENGTH. Make it long (say 5mm) and any path
+%     shorter than one wavelength fails with "Dimension too large" -- which
+%     inline text, being arbitrarily short, regularly is. Keep it small.
+%   - never combine `decorate' with `rounded corners': that combination also
+%     throws "Dimension too large".
 %=============================================================================
 
 \tikzset{
   almapencil/.style={
     line width=0.6pt,
     decorate,
-    decoration={random steps, segment length=1.2pt, amplitude=\almawiggleamp}
+    decoration={snake, segment length=1.3mm, amplitude=\almawiggleamp}
   },
   % Zero-padding anchor for inline text, so overlays track the glyph bounds.
   almanode/.style={inner sep=0pt, outer sep=0pt, anchor=base},
@@ -248,7 +254,7 @@
 % \def, so \ifx compares the \long prefixes and reports false even when both
 % bodies are empty -- which printed a stray ": " in front of every unattributed
 % memo.
-\newcommand{\alma@memo}[2][almaalert]{%
+\newcommand{\alma@memo}[2][almamuted]{%
   \begingroup
     \colorlet{alma@memoc}{#1}%
     \tikz[baseline=(almaX.base)]{%
@@ -262,7 +268,7 @@
 
 % \NB{...} -- terser inline flag for a quick note to self.
 \newcommand{\alma@NB}[1]{%
-  {\color{almaalert}\footnotesize\bfseries [NB: #1]}%
+  {\color{almamuted}\footnotesize\bfseries [NB: #1]}%
 }
 
 \ifalma@hidememo

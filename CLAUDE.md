@@ -26,8 +26,10 @@ themes into two 50KB files with duplicated colour and pencil code.
 - **No font packages, anywhere.** Nothing loads a font package or touches
   `\familydefault`/`\rmdefault`/`\sfdefault`, and no `\setbeamerfont{...}{family=...}`.
   Style by size, weight and colour only. CI asserts this.
-- **One accent colour.** `almaaccent` in `almacore.sty` is the single knob.
-  `almaalert` is used only by `\memo`, `\NB` and alert blocks.
+- **One accent colour, and nothing red outside alert blocks.** `almaaccent`
+  in `almacore.sty` is the single knob; `\memo` and `\NB` are grey. The
+  Beamer `alertblock` is the one place `almaalert` is still used, because an
+  alert that looks like everything else is not an alert.
 - **Mix tints against the background, not white.** In the theme write
   `svaccent!12!svbg`, never `svaccent!12` — the latter mixes with white and
   produces near-white blocks in `night` mode. This was a real bug.
@@ -64,6 +66,11 @@ apt-get install -y --no-install-recommends texlive-latex-base \
 
 ## Gotchas hit while building this
 
+- The pencil decoration is `snake` (a smooth sine), NOT `random steps`. At the
+  small segment lengths inline text needs, random steps is high-frequency
+  noise and boxes look like a bad scan. Two traps: `segment length` is the
+  wavelength, so a long one fails with "Dimension too large" on paths shorter
+  than one wave; and `decorate` plus `rounded corners` throws the same error.
 - `\ifx\foo\empty` is false for a `\newcommand`-defined empty macro —
   `\newcommand` makes `\long` macros and `\empty` is not `\long`, so `\ifx`
   compares the prefixes. Use etoolbox's `\ifdefempty`.
