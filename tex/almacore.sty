@@ -112,6 +112,7 @@
 \definecolor{almagold}{HTML}{D9A404}    % opt-in second pencil colour
 \definecolor{almacodebg}{HTML}{F2F2F2}  % code background
 \definecolor{almaboxbg}{HTML}{EEF3F8}   % notebox background
+\definecolor{almahighlight}{HTML}{FFE9A8} % \hl marker-pen wash
 
 
 %=============================================================================
@@ -142,7 +143,7 @@
 
 \tikzset{
   almapencil/.style={
-    line width=0.9pt,
+    line width=0.7pt,
     decorate,
     decoration={random steps, segment length=3mm, amplitude=\almawiggleamp}
   },
@@ -167,19 +168,21 @@
 % `rectangle' path, however well decorated, still has four mathematically
 % perfect corners and looks mechanical.
 %
-% The offsets are deliberately asymmetric and around 1pt. Past roughly 1.5pt
-% the box stops looking hand-drawn and starts looking careless.
+% The offsets are deliberately asymmetric and SMALL -- about a third of a
+% point. They were 1.1pt at first, which left the corner strokes visibly
+% crossing like registration marks; at 0.3pt the corners simply close, with
+% just enough irregularity to read as drawn rather than ruled.
 %=============================================================================
 
 \newcommand{\alma@sketchbox}[2]{%
   \draw[almapencil, #2]
-    ([shift={(-1.1pt,-0.5pt)}]#1.south west) -- ([shift={( 0.9pt, 0.4pt)}]#1.south east);
+    ([shift={(-0.30pt,-0.14pt)}]#1.south west) -- ([shift={( 0.25pt, 0.11pt)}]#1.south east);
   \draw[almapencil, #2]
-    ([shift={( 0.5pt,-1.2pt)}]#1.south east) -- ([shift={(-0.4pt, 1.0pt)}]#1.north east);
+    ([shift={( 0.14pt,-0.33pt)}]#1.south east) -- ([shift={(-0.11pt, 0.27pt)}]#1.north east);
   \draw[almapencil, #2]
-    ([shift={( 1.0pt, 0.5pt)}]#1.north east) -- ([shift={(-0.9pt,-0.4pt)}]#1.north west);
+    ([shift={( 0.27pt, 0.14pt)}]#1.north east) -- ([shift={(-0.25pt,-0.11pt)}]#1.north west);
   \draw[almapencil, #2]
-    ([shift={(-0.5pt, 1.1pt)}]#1.north west) -- ([shift={( 0.4pt,-1.0pt)}]#1.south west);
+    ([shift={(-0.14pt, 0.30pt)}]#1.north west) -- ([shift={( 0.11pt,-0.27pt)}]#1.south west);
 }
 
 
@@ -234,6 +237,27 @@
   \end{equation*}
 }
 
+% --- \hl[<colour>]{<text>} --------------------------------------------------
+% Marker-pen highlight: a soft wash behind the text.
+%
+% Implemented in TikZ rather than with soul's \hl. soul is not in every TeX
+% installation (it is absent from Debian's texlive-latex-extra, for one), and
+% a missing package is a hard failure where this is not. The trade-off is the
+% same one every other mark here makes: it cannot break across a line.
+%
+% \hl is only claimed if nothing else has defined it, so loading soul
+% alongside this package leaves soul's version in charge.
+\newcommand{\almahl}[2][almahighlight]{%
+  \raisebox{0pt}[0pt][0pt]{%
+    \tikz[baseline=(almaH.base)]{%
+      \node[inner xsep=2pt, inner ysep=1pt, outer sep=0pt, anchor=base,
+            fill=#1] (almaH) {\strut #2};
+    }%
+  }%
+}
+\providecommand{\hl}{}
+\ifdefempty{\hl}{\renewcommand{\hl}{\almahl}}{}
+
 % --- \result{<content>} -----------------------------------------------------
 % Prominent boxed final answer -- the single most useful thing a problem set
 % can do for whoever grades it is make the final answer impossible to miss.
@@ -242,7 +266,7 @@
   \begin{center}
     \tikz{%
       \node[almaboxnode, inner xsep=10pt, inner ysep=7pt] (almaX) {\strut #1};
-      \alma@sketchbox{almaX}{almaaccent, line width=1.1pt}%
+      \alma@sketchbox{almaX}{almaaccent, line width=0.9pt}%
     }%
   \end{center}
 }
@@ -328,6 +352,29 @@
 %
 % TWO PASSES. almaoverlay uses `remember picture', so positions resolve on the
 % second run -- the same contract as \tableofcontents. latexmk handles it.
+%
+% TABLES. \marker works inside a tabular cell, so a single number in a
+% regression table can be boxed and annotated:
+%
+%     Coefficient & \marker{b}{\lapisbox{21.15}} \\
+%     ... \end{tabular}
+%     \handnote{b}{2.2,0.7}{significant at 1\%}
+%
+% Put the \handnote AFTER the tabular has closed: the overlay is drawn in page
+% coordinates, and a \draw inside a cell would be clipped by the alignment.
+%
+% FIGURES. Inside a tikzpicture there is no need for \marker or an overlay at
+% all -- annotate in the picture's own coordinates and it resolves in ONE
+% pass:
+%
+%     \begin{axis}[econaxis]
+%       \addplot ...;
+%       \node[anchor=west] (c) at (axis cs:2.1,4.6) {\hand one comment};
+%       \draw[almaarrow] (c.west) to[bend right=20] (axis cs:1.2,3.1);
+%     \end{axis}
+%
+% Use `axis cs:' so the annotation tracks the data, not the canvas: change the
+% axis limits and the arrow still points at the same observation.
 %=============================================================================
 
 \tikzset{
@@ -369,15 +416,22 @@
 % --- Inline sketch arrows ---------------------------------------------------
 % Short pencil arrows for running text: "GDP growth \handarrowup{} accelerated".
 % Follow with \ or {} to keep the trailing space.
-\newcommand{\alma@inarrow}[1]{%
+% The optional argument is passed straight to the \draw, so anything TikZ
+% understands works: a colour, `line width=1pt', `<->' for two heads, `-' for
+% none, `opacity=0.6'.
+%
+%   \handarrowup                       default
+%   \handarrowdown[almaalert]          coloured
+%   \handarrowright[line width=1.1pt]  heavier
+\newcommand{\alma@inarrow}[2][]{%
   \tikz[baseline=-0.55ex]{%
-    \draw[almapencil, line width=0.7pt, almaaccent!80,
-          -{Stealth[length=4pt, round]}] (0,0) -- #1;}%
+    \draw[almapencil, almaaccent!80,
+          -{Stealth[length=4pt, round]}, #1] (0,0) -- #2;}%
 }
-\newcommand{\handarrowup}{\alma@inarrow{(0.30,0.34)}}
-\newcommand{\handarrowdown}{\alma@inarrow{(0.30,-0.34)}}
-\newcommand{\handarrowright}{\alma@inarrow{(0.45,0)}}
-\newcommand{\handarrowleft}{\alma@inarrow{(-0.45,0)}}
+\newcommand{\handarrowup}[1][]{\alma@inarrow[#1]{(0.30,0.34)}}
+\newcommand{\handarrowdown}[1][]{\alma@inarrow[#1]{(0.30,-0.34)}}
+\newcommand{\handarrowright}[1][]{\alma@inarrow[#1]{(0.45,0)}}
+\newcommand{\handarrowleft}[1][]{\alma@inarrow[#1]{(-0.45,0)}}
 
 
 %=============================================================================

@@ -141,21 +141,64 @@ regress price mpg weight, robust
   \end{table}
 \end{frame}
 
-\begin{frame}{Figure}
-  \begin{figure}
-    \centering
-    \begin{tikzpicture}
-      \begin{axis}[econaxis, xlabel={$x_1$}, ylabel={$x_2$},
-                   xmin=0, xmax=3.2, ymin=0, ymax=5.6,
-                   width=8cm, height=5cm,
-                   restrict y to domain=0:6]
-        \addplot[almacurve, domain=0:3, samples=100] {-x^2 + 4};
-        \addplot[almacurve, domain=0:3, samples=100] {-x^2 + 5};
-        \addplot[almaconstraint, domain=0:3] {4.5 - 1.5*x};
-      \end{axis}
-    \end{tikzpicture}
-    \caption{Indifference curves and a budget line.}
-  \end{figure}
+\begin{frame}{Handwritten notes on a figure}
+  % Annotations live INSIDE the axis in `axis cs' data coordinates, so they
+  % track the data rather than the canvas and need only one pass.
+  % `clip=false' lets a comment sit outside the plot area.
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[econaxis, xlabel={$x_1$}, ylabel={$x_2$},
+                 xmin=0, xmax=4.6, ymin=0, ymax=6.4, clip=false,
+                 width=8.5cm, height=5.2cm,
+                 restrict y to domain=0:6]
+      \addplot[almacurve, domain=0:3, samples=100] {-x^2 + 4};
+      \addplot[almacurve, domain=0:3, samples=100] {-x^2 + 5};
+      \addplot[almaconstraint, domain=0:3] {4.5 - 1.5*x};
+
+      \node[anchor=west, text=almaaccent!85] (n1) at (axis cs:3.0,5.7)
+        {\hand one comment};
+      \draw[almaarrow] (n1.south west) to[bend right=20] (axis cs:1.5,2.9);
+
+      \node[anchor=west, text=almaaccent!85] (n2) at (axis cs:3.2,2.6)
+        {\hand another comment};
+      \draw[almaarrow] (n2.west) to[bend left=20] (axis cs:2.3,1.1);
+    \end{axis}
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Boxing numbers in a table}
+  \vspace{0.3cm}
+  \centering
+  \begin{tabular}{lc}
+    \toprule
+    Dep.\ variable: spread & (1) \\
+    \midrule
+    Coefficient $\beta_1$ & \marker{tcoef}{\lapisbox{21.15}} \\
+                          & (7.35) \\
+    Double clustering     & Yes \\
+    $R^2$                 & 0.034 \\
+    Observations          & 285{,}794 \\
+    \bottomrule
+  \end{tabular}
+  % The \handnote goes after the tabular: the overlay is in page coordinates
+  % and a \draw inside a cell would be clipped by the alignment.
+  \handnote{tcoef}{2.4,0.7}{significant at 1\%}
+  \vspace{0.6cm}
+\end{frame}
+
+\begin{frame}{Highlighting}
+  \vspace{0.4cm}
+  Highlight text with \hl{a marker-pen wash}, or with
+  \hl[almagold!50]{a different colour}.
+
+  \medskip
+  Box it instead with \lapisbox{a pencil box effect}, or underline it with
+  \lapis{a pencil stroke}.
+
+  \medskip
+  Inline arrows take options too: \handarrowup{} default,
+  \handarrowdown[almaalert]{} coloured, \handarrowright[line width=1.2pt]{}
+  heavier.
 \end{frame}
 
 \begin{frame}{Pointing at things}

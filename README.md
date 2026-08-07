@@ -79,9 +79,10 @@ numbered within sections, so "Proposition 3.2" tells you where to look.
 | `\lapisbox[c]{text}` | hand-drawn box around inline text |
 | `\lapisboxeq[c]{math}` | hand-drawn box around display math |
 | `\result{...}` | prominent boxed result |
+| `\hl[c]{text}` | marker-pen highlight behind the text |
 | `{\hand ...}`, `\handbold[stroke]{text}` | handwriting, scoped to the group |
 | `\marker{name}{content}` + `\handnote[bend]{name}{dx,dy}{text}` | handwritten comment with an arrow back to the target |
-| `\handarrowup` / `down` / `left` / `right` | short inline arrows |
+| `\handarrowup` / `down` / `left` / `right` | short inline arrows; take TikZ options |
 | `almaoverlay` (env) + `almaarrow` style | draw your own annotation arrows |
 | `notebox` + `\boxentry{title}` | breakable shaded call-out, numbered |
 | `\memo{...}`, `\NB{...}` | draft annotations, hidden by `hidememo` |
@@ -89,6 +90,12 @@ numbered within sections, so "Proposition 3.2" tells you where to look.
 | `econaxis` | pgfplots style for economics figures |
 | `Y` column, `\tablenote`, `\sym` | table helpers, estout-compatible |
 | `\E`, `\Ex[t]`, `\Var`, `\Cov` | moment operators |
+
+Annotating a **table**: `\marker` names a cell, and the `\handnote` follows
+the closed tabular (the overlay is in page coordinates, so a `\draw` inside a
+cell would be clipped). Annotating a **figure**: skip `\marker` entirely and
+draw inside the axis in `axis cs:` data coordinates — one pass, and the arrow
+tracks the data if the limits change. Both are shown in the demo templates.
 
 It loads **only packages that are safe under Beamer** — `xcolor`, `tikz`,
 `tcolorbox`, `etoolbox`, `amsmath`, `fancyvrb`. Everything page-based lives in

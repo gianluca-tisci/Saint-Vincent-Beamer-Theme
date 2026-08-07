@@ -97,15 +97,27 @@ people, or even across bundles for one person.
 \para The Walrasian demand correspondence solves
 $\max_{x} \uof{x}$ subject to $p \cdot x \le w$. \NB{add the Lagrangian}
 
+% Handwritten notes on a FIGURE. Everything is inside the axis, in `axis cs'
+% data coordinates, so the annotations track the data rather than the canvas
+% and resolve in a single pass. `clip=false' lets a comment sit outside the
+% plot area without being cut off.
 \begin{figure}[H]
   \centering
   \begin{tikzpicture}
     \begin{axis}[econaxis, xlabel={$x_1$}, ylabel={$x_2$},
-                 xmin=0, xmax=3.2, ymin=0, ymax=5.6,
+                 xmin=0, xmax=4.4, ymin=0, ymax=6.4, clip=false,
                  restrict y to domain=0:6]
       \addplot[almacurve, domain=0:3, samples=150] {-x^2 + 4};
       \addplot[almacurve, domain=0:3, samples=150] {-x^2 + 5};
       \addplot[almaconstraint, domain=0:3] {4.5 - 1.5*x};
+
+      \node[anchor=west, text=almaaccent!85] (n1) at (axis cs:2.6,5.6)
+        {\hand higher utility};
+      \draw[almaarrow] (n1.south west) to[bend right=20] (axis cs:1.5,2.9);
+
+      \node[anchor=west, text=almaaccent!85] (n2) at (axis cs:2.9,2.4)
+        {\hand budget line};
+      \draw[almaarrow] (n2.west) to[bend left=20] (axis cs:2.2,1.2);
     \end{axis}
   \end{tikzpicture}
   \caption{Indifference curves and the budget line.}
@@ -119,6 +131,33 @@ The interior solution is
 \vspace{0.5cm}
 
 \result{$x^{\ast}(p,w) = \dfrac{w}{2p}$ under Cobb--Douglas with $\alpha = 1/2$.}
+
+\section{Estimates}
+
+\para Highlighting works inline: the slope is \hl{significant at 1\%} in
+every specification, and the fit improves \handarrowup{} with more controls.
+
+% Boxing a number in a TABLE. \marker names the cell; the \handnote goes
+% after the tabular has closed, because the overlay is drawn in page
+% coordinates and would be clipped inside the alignment.
+\vspace{0.4cm}
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lc}
+    \toprule
+    Dep.\ variable: spread & (1) \\
+    \midrule
+    Coefficient $\beta_1$  & \marker{coef}{\lapisbox{21.15}} \\
+                           & (7.35) \\
+    Double clustering      & Yes \\
+    $R^2$                  & 0.034 \\
+    Observations           & 285{,}794 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Baseline specification.}
+\end{table}
+\handnote{coef}{2.6,0.7}{significant at 1\%}
+\vspace{0.8cm}
 
 \backmatter
 
