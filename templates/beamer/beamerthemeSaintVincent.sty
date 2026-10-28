@@ -12,6 +12,9 @@
 %% OPTIONS
 %%   night           Dark colour scheme.
 %%   nosectionslides Do not insert a divider slide at each \section.
+%%   sectiontoc      At each \section, show the table of contents with the
+%%                   current section highlighted instead of a divider slide.
+%%                   The slide title is \svtoctitle (default "Overview").
 %%   (options not listed here are forwarded to almacore: hidememo, wiggle=,
 %%    nographs)
 %%
@@ -27,12 +30,13 @@
 %% ===========================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerthemeSaintVincent}[2026/08/06 v1.0 Saint Vincent theme]
+\ProvidesPackage{beamerthemeSaintVincent}[2026/10/28 v1.1 Saint Vincent theme]
 
 \RequirePackage{kvoptions}
 \SetupKeyvalOptions{family=sv, prefix=sv@}
 \DeclareBoolOption{night}
 \DeclareBoolOption{nosectionslides}
+\DeclareBoolOption{sectiontoc}
 \DeclareDefaultOption{\PassOptionsToPackage{\CurrentOption}{almacore}}
 \ProcessKeyvalOptions*
 
@@ -70,19 +74,22 @@
 % would mix against WHITE regardless of theme, which in night mode produced
 % near-white block bodies on a near-black slide.
 \setbeamercolor{title}{fg=svaccent}
-\setbeamercolor{subtitle}{fg=svmuted}
+\setbeamercolor{subtitle}{fg=svaccent}
 \setbeamercolor{author}{fg=svfg}
 \setbeamercolor{institute}{fg=svmuted}
 \setbeamercolor{date}{fg=svmuted}
 \setbeamercolor{frametitle}{fg=svaccent, bg=svbg}
 \setbeamercolor{framesubtitle}{fg=svmuted, bg=svbg}
-\setbeamercolor{footline}{fg=svmuted}
+% The footer is a solid accent bar; its side texts are a tint of the bar so
+% the section name in the middle reads first.
+\setbeamercolor{footline}{fg=svbg, bg=svaccent}
+\colorlet{svfootside}{svbg!78!svaccent}
 \setbeamercolor{itemize item}{fg=svaccent}
 \setbeamercolor{itemize subitem}{fg=svaccent!75}
 \setbeamercolor{enumerate item}{fg=svaccent}
 \setbeamercolor{caption name}{fg=svaccent}
-\setbeamercolor{section in toc}{fg=svfg}
-\setbeamercolor{subsection in toc}{fg=svmuted}
+\setbeamercolor{section in toc}{fg=svaccent}
+\setbeamercolor{subsection in toc}{fg=svfg}
 
 % Blocks. `block' carries the accent; `alertblock' is the one place a second
 % colour is warranted, since an alert that looks like everything else is not
@@ -106,15 +113,17 @@
 % Sizes and weights only. No \setbeamerfont{...}{family=...} anywhere.
 %=============================================================================
 
-\setbeamerfont{title}{size=\LARGE, series=\bfseries}
-\setbeamerfont{subtitle}{size=\large, series=\mdseries}
-\setbeamerfont{frametitle}{size=\large, series=\bfseries}
-\setbeamerfont{framesubtitle}{size=\small, series=\mdseries}
-\setbeamerfont{author}{size=\normalsize}
+\setbeamerfont{title}{size=\Large, series=\bfseries}
+\setbeamerfont{subtitle}{size=\normalsize, series=\bfseries}
+\setbeamerfont{frametitle}{size=\Large, series=\bfseries}
+\setbeamerfont{framesubtitle}{size=\footnotesize, series=\mdseries}
+\setbeamerfont{author}{size=\large}
 \setbeamerfont{institute}{size=\small}
-\setbeamerfont{date}{size=\small}
+\setbeamerfont{date}{size=\scriptsize}
 \setbeamerfont{block title}{size=\normalsize, series=\bfseries}
-\setbeamerfont{footline}{size=\scriptsize}
+\setbeamerfont{footline}{size=\tiny}
+\setbeamerfont{section in toc}{size=\large, series=\bfseries}
+\setbeamerfont{subsection in toc}{size=\small, series=\mdseries}
 \setbeamerfont{caption}{size=\small}
 \setbeamerfont{caption name}{series=\bfseries}
 
@@ -126,66 +135,87 @@
 % The navigation symbols cost a corner of every slide and nobody clicks them.
 \setbeamertemplate{navigation symbols}{}
 
-\setbeamertemplate{itemize item}{\small$\blacktriangleright$}
-\setbeamertemplate{itemize subitem}{\scriptsize$\blacktriangleright$}
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{itemize subitem}[circle]
 \setbeamertemplate{itemize subsubitem}{\scriptsize$-$}
 \setbeamertemplate{blocks}[rounded][shadow=false]
 \setbeamertemplate{caption}[numbered]
 
-% --- Frame title: title, optional subtitle, thin accent rule ---------------
+% --- Margins ---------------------------------------------------------------
+% One margin for the body, the frame title and the footer, so their left
+% edges line up.
+\newlength{\svmargin}
+\setlength{\svmargin}{2em}
+\setbeamersize{text margin left=\svmargin, text margin right=\svmargin}
+
+% --- Frame title: title, thin rule, optional subtitle below the rule --------
+% The box is \paperwidth wide with the margins as skips, so the rule must be
+% \paperwidth minus both margins; a fixed fraction of \paperwidth overflowed.
 \setbeamertemplate{frametitle}{%
   \nointerlineskip
-  \vspace{0.9em}%
-  \begin{beamercolorbox}[wd=\paperwidth, leftskip=0.8cm, rightskip=0.8cm]{frametitle}
-    \usebeamerfont{frametitle}\insertframetitle\par
+  \vspace{0.6em}%
+  \begin{beamercolorbox}[wd=\paperwidth, leftskip=\svmargin, rightskip=\svmargin]{frametitle}
+    % Ragged right without \raggedright, which would reset \leftskip to zero.
+    \rightskip=\dimexpr\svmargin\relax plus 1fil\relax\usebeamerfont{frametitle}\strut\insertframetitle\strut\par
+    \nointerlineskip\vskip0.15em
+    \leavevmode{\color{svaccent}\rule{\dimexpr\paperwidth-2\svmargin\relax}{0.4pt}}\par
     \ifx\insertframesubtitle\@empty\else
+      \vspace{0.15em}%
       {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}%
        \insertframesubtitle\par}%
     \fi
-    \vspace{0.25em}%
-    {\color{svaccent}\rule{0.965\paperwidth}{0.8pt}}%
   \end{beamercolorbox}
-  \vspace{0.4em}%
+  \vspace{0.3em}%
 }
 
-% --- Footline: short title, section, page ----------------------------------
+% --- Footline: solid bar with short title | section | page / total --------
+% Widths are fractions of the bar's inner width, written out because
+% \textwidth is not the body width while the footline is typeset.
 \setbeamertemplate{footline}{%
-  \hbox{%
-    \begin{beamercolorbox}[wd=0.34\paperwidth, ht=2.4ex, dp=1.2ex,
-                           leftskip=0.8cm]{footline}
-      \usebeamerfont{footline}\insertshorttitle
-    \end{beamercolorbox}%
-    \begin{beamercolorbox}[wd=0.46\paperwidth, ht=2.4ex, dp=1.2ex,
-                           center]{footline}
-      \usebeamerfont{footline}\insertsectionhead
-    \end{beamercolorbox}%
-    \begin{beamercolorbox}[wd=0.20\paperwidth, ht=2.4ex, dp=1.2ex,
-                           rightskip=0.8cm plus1fil]{footline}
-      \usebeamerfont{footline}\hfill\insertframenumber/\inserttotalframenumber
-    \end{beamercolorbox}%
-  }%
-  \vskip0pt
+  \begin{beamercolorbox}[wd=\paperwidth, ht=2.25ex, dp=1.25ex,
+                         leftskip=\svmargin, rightskip=\svmargin]{footline}%
+    \usebeamerfont{footline}%
+    % \leavevmode: a minipage met in vertical mode would be stacked above the
+    % bar instead of starting the line.
+    \leavevmode
+    \begin{minipage}[t]{\dimexpr(\paperwidth-2\svmargin)*30/100\relax}\raggedright
+      \textcolor{svfootside}{\insertshorttitle}%
+    \end{minipage}\hfill
+    \begin{minipage}[t]{\dimexpr(\paperwidth-2\svmargin)*38/100\relax}\centering
+      \insertsectionhead
+    \end{minipage}\hfill
+    \begin{minipage}[t]{\dimexpr(\paperwidth-2\svmargin)*30/100\relax}\raggedleft
+      \textcolor{svfootside}{\insertframenumber{} / \inserttotalframenumber}%
+    \end{minipage}%
+  \end{beamercolorbox}%
 }
 
-% --- Title page -------------------------------------------------------------
+% --- Title page: centred stack, title graphic (e.g. a logo) at the bottom --
 \setbeamertemplate{title page}{%
-  \begin{center}
-    \vfill
-    {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
+  \vfill
+  \begingroup
+  \centering
+  \begin{beamercolorbox}[sep=10pt, center]{title}
+    \usebeamerfont{title}\inserttitle\par
     \ifx\insertsubtitle\@empty\else
-      \vspace{0.35em}
-      {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}
+      \vskip0.25em
+      {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
     \fi
-    \vspace{0.9em}
-    {\color{svaccent}\rule{0.55\paperwidth}{1pt}}\par
-    \vspace{0.9em}
-    {\usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor\par}
-    \vspace{0.5em}
-    {\usebeamerfont{institute}\usebeamercolor[fg]{institute}\insertinstitute\par}
-    \vspace{0.9em}
-    {\usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate\par}
-    \vfill
-  \end{center}
+  \end{beamercolorbox}%
+  \vskip0.5em\par
+  \begin{beamercolorbox}[sep=8pt, center]{author}
+    \usebeamerfont{author}\insertauthor
+  \end{beamercolorbox}
+  \vskip-1em
+  \begin{beamercolorbox}[sep=8pt, center]{institute}
+    \usebeamerfont{institute}\insertinstitute
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[sep=8pt, center]{date}
+    \usebeamerfont{date}\insertdate
+  \end{beamercolorbox}\vskip0.5em
+  {\inserttitlegraphic\par}
+  \endgroup
+  \vfill
 }
 
 % --- Section divider --------------------------------------------------------
@@ -200,22 +230,32 @@
   \end{center}
 }
 
+\newcommand{\svtoctitle}{Overview}
+
 \ifsv@nosectionslides\else
-  \AtBeginSection[]{%
-    \begin{frame}[plain, noframenumbering]
-      \sectionpage
-    \end{frame}%
-  }
+  \ifsv@sectiontoc
+    \AtBeginSection[]{%
+      \begin{frame}[noframenumbering]{\svtoctitle}
+        \tableofcontents[currentsection]
+      \end{frame}%
+    }
+  \else
+    \AtBeginSection[]{%
+      \begin{frame}[plain, noframenumbering]
+        \sectionpage
+      \end{frame}%
+    }
+  \fi
 \fi
 
-% --- Table of contents ------------------------------------------------------
-\setbeamertemplate{section in toc}{%
-  \leavevmode\leftskip=0pt%
-  {\color{svaccent}\inserttocsectionnumber.}~\inserttocsection\par
-}
+% --- Table of contents: numbered sections, subsections as 3.1, 3.2 --------
+% Beamer's own `sections numbered' template, so \tableofcontents[currentsection]
+% greys out the other sections automatically.
+\setbeamertemplate{section in toc}[sections numbered]
 \setbeamertemplate{subsection in toc}{%
-  \leavevmode\leftskip=1.4em%
-  {\color{svaccent}\textbullet}~\inserttocsubsection\par
+  \leavevmode\leftskip=3.2em%
+  \rlap{\hskip-2em\inserttocsectionnumber.\inserttocsubsectionnumber}%
+  \inserttocsubsection\par
 }
 
 \mode<all>
